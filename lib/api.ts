@@ -1,5 +1,6 @@
 // API configuration and utilities
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const DEFAULT_API_BASE_URL = 'https://speak-lab-backend-kbrc-2f2ibtl6f-waqas-safdars-projects.vercel.app';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '');
 
 export interface LoginRequest {
   username: string;
@@ -56,7 +57,9 @@ async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
     ...options,
     headers,
   });
@@ -251,7 +254,7 @@ export const voiceCloningApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch('https://corrine-storiated-salma.ngrok-free.dev/upload_reference', {
+    const response = await fetch(`${API_BASE_URL}/upload_reference`, {
       method: 'POST',
       headers,
       body: formData,
