@@ -1,6 +1,6 @@
 // API configuration and utilities
-const DEFAULT_API_BASE_URL = 'https://speak-lab-backend-kbrc-2f2ibtl6f-waqas-safdars-projects.vercel.app';
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '');
+// Use same-origin proxy to avoid browser CORS issues.
+const API_BASE_URL = '/api/proxy';
 
 export interface LoginRequest {
   username: string;
