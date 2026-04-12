@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -31,7 +30,6 @@ import { TokenManager, userApi } from '@/lib/api';
 // Import dashboard sections
 import HomeSection from './sections/HomeSection';
 import TextToSpeechSection from './sections/TextToSpeechSection';
-import VoiceCloningSection from './sections/VoiceCloningSection';
 import CreditsSection from './sections/CreditsSection';
 import SettingsSection from './sections/SettingsSection';
 
@@ -40,7 +38,6 @@ const drawerWidth = 240;
 const navItems = [
   { id: 'home', label: 'Home', icon: <HomeIcon /> },
   { id: 'tts', label: 'Text to Speech', icon: <RecordVoiceOverIcon /> },
-  { id: 'voice-cloning', label: 'Voice Cloning', icon: <ContentCopyIcon /> },
   { id: 'credits', label: 'Credits', icon: <AccountBalanceWalletIcon /> },
   { id: 'settings', label: 'Settings', icon: <SettingsIcon /> },
 ];
@@ -128,8 +125,6 @@ export default function DashboardPage() {
         return <HomeSection />;
       case 'tts':
         return <TextToSpeechSection />;
-      case 'voice-cloning':
-        return <VoiceCloningSection />;
       case 'credits':
         return <CreditsSection />;
       case 'settings':

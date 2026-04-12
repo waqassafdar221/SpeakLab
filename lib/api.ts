@@ -121,7 +121,6 @@ export interface PublicVoice {
 
 export interface TTSRequest {
   text: string;
-  voice_id?: number;
   public_voice?: string;
 }
 
@@ -224,35 +223,6 @@ export const adminApi = {
 
   listPackages: async (): Promise<Package[]> => {
     return apiFetch<Package[]>('/admin/packages');
-  },
-};
-
-export interface ClonedVoice {
-  id: number;
-  name: string;
-  gender: string | null;
-  status: string;
-  created_at: string;
-  provider_voice_id: string;
-}
-
-export interface CreateClonedVoiceRequest {
-  name: string;
-  gender: string;
-  provider_voice_id: string;
-  status?: string;
-}
-
-export const voiceCloningApi = {
-  getClonedVoices: async (): Promise<ClonedVoice[]> => {
-    return apiFetch<ClonedVoice[]>('/voices/cloned');
-  },
-
-  saveClonedVoice: async (request: CreateClonedVoiceRequest): Promise<ClonedVoice> => {
-    return apiFetch<ClonedVoice>('/voices/cloned', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
   },
 };
 

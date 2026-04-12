@@ -24,8 +24,7 @@ import {
   InputLabel,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { motion } from 'framer-motion';
-import { ttsApi, userApi, voiceCloningApi, ClonedVoice, buildProxyUrl } from '@/lib/api';
+import { ttsApi, userApi, PublicVoice, buildProxyUrl } from '@/lib/api';
 
 export default function HomeSection() {
   const [textInput, setTextInput] = useState('');
@@ -35,26 +34,26 @@ export default function HomeSection() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [credits, setCredits] = useState(0);
   const [username, setUsername] = useState('User');
-  const [clonedVoices, setClonedVoices] = useState<ClonedVoice[]>([]);
-  const [selectedVoiceId, setSelectedVoiceId] = useState<number | null>(null);
+  const [publicVoices, setPublicVoices] = useState<PublicVoice>({});
+  const [selectedPublicVoice, setSelectedPublicVoice] = useState('');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [costDeducted, setCostDeducted] = useState(0);
 
-  // Fetch cloned voices and user info on mount
+  // Fetch public voices and user info on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [voicesData, userData] = await Promise.all([
-          voiceCloningApi.getClonedVoices(),
+          ttsApi.getPublicVoices(),
           userApi.getMe(),
         ]);
-        setClonedVoices(voicesData);
+        setPublicVoices(voicesData);
         setCredits(userData.credits);
         setUsername(userData.username);
-        
-        // Set first voice as default
-        if (voicesData.length > 0 && voicesData[0].status === 'Ready') {
-          setSelectedVoiceId(voicesData[0].id);
+
+        const firstVoiceKey = Object.keys(voicesData)[0];
+        if (firstVoiceKey) {
+          setSelectedPublicVoice(firstVoiceKey);
         }
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -70,12 +69,12 @@ export default function HomeSection() {
   const handleGenerate = async () => {
     setError('');
     setAudioUrl(null);
-    
-    if (!selectedVoiceId) {
+
+    if (!selectedPublicVoice) {
       setError('Please select a voice');
       return;
     }
-    
+
     if (!textInput.trim()) {
       setError('Please enter text to generate speech');
       return;
@@ -85,7 +84,7 @@ export default function HomeSection() {
     try {
       const response = await ttsApi.generateSpeech({
         text: textInput,
-        voice_id: selectedVoiceId,
+        public_voice: selectedPublicVoice,
       });
 
       setCostDeducted(response.deducted);
@@ -120,7 +119,7 @@ export default function HomeSection() {
           Welcome back, {username}!
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          Quick access to create AI-powered voices
+          Quick access to generate speech with public voices
         </Typography>
       </Box>
 
@@ -166,9 +165,9 @@ export default function HomeSection() {
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Select voice</InputLabel>
                 <Select
-                  value={selectedVoiceId || ''}
+                  value={selectedPublicVoice}
                   label="Select voice"
-                  onChange={(e) => setSelectedVoiceId(e.target.value as number)}
+                  onChange={(e) => setSelectedPublicVoice(e.target.value)}
                   sx={{
                     borderRadius: '12px',
                     backgroundColor: '#f6f5f1',
@@ -180,9 +179,9 @@ export default function HomeSection() {
                     },
                   }}
                 >
-                  {clonedVoices.filter(v => v.status === 'Ready').map((voice) => (
-                    <MenuItem key={voice.id} value={voice.id}>
-                      {voice.name} ({voice.gender})
+                  {Object.entries(publicVoices).map(([key, voice]) => (
+                    <MenuItem key={key} value={key}>
+                      {voice.name} ({voice.country})
                     </MenuItem>
                   ))}
                 </Select>
@@ -267,7 +266,7 @@ export default function HomeSection() {
                 size="large"
                 fullWidth
                 onClick={handleGenerate}
-                disabled={!textInput.trim() || isLoading}
+                disabled={!selectedPublicVoice || !textInput.trim() || isLoading}
                 sx={{
                   backgroundColor: '#1a1a1a',
                   color: '#fff',
@@ -337,10 +336,10 @@ export default function HomeSection() {
                   mb: 2,
                 }}
               >
-                Your Cloned Voices
+                Available Voices
               </Typography>
 
-              {clonedVoices.length === 0 ? (
+              {Object.keys(publicVoices).length === 0 ? (
                 <Box
                   sx={{
                     display: 'flex',
@@ -356,22 +355,22 @@ export default function HomeSection() {
                     variant="body1"
                     sx={{ color: '#6a6a6a', mb: 2 }}
                   >
-                    No cloned voices yet
+                    No voices available
                   </Typography>
                   <Typography
                     variant="body2"
                     sx={{ color: '#9a9a9a' }}
                   >
-                    Go to Voice Cloning section to upload your voice
+                    Please refresh the page
                   </Typography>
                 </Box>
               ) : (
                 <List sx={{ flexGrow: 1, overflow: 'auto' }}>
-                  {clonedVoices.filter(v => v.status === 'Ready').map((voice) => {
-                    const isSelected = selectedVoiceId === voice.id;
+                  {Object.entries(publicVoices).map(([key, voice]) => {
+                    const isSelected = selectedPublicVoice === key;
                     return (
                       <ListItem
-                        key={voice.id}
+                        key={key}
                         sx={{
                           borderRadius: '12px',
                           mb: 1,
@@ -382,7 +381,7 @@ export default function HomeSection() {
                             backgroundColor: isSelected ? '#2a2a2a' : '#ebe9e0',
                           },
                         }}
-                        onClick={() => setSelectedVoiceId(voice.id)}
+                        onClick={() => setSelectedPublicVoice(key)}
                       >
                         <ListItemAvatar>
                           <Avatar
@@ -393,12 +392,12 @@ export default function HomeSection() {
                               height: 40,
                             }}
                           >
-                            {voice.name.charAt(0).toUpperCase()}
+                            {voice.language?.charAt(0).toUpperCase() || 'V'}
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
                           primary={voice.name}
-                          secondary={voice.gender}
+                          secondary={`${voice.country} • ${voice.gender}`}
                           primaryTypographyProps={{
                             fontWeight: 600,
                             color: isSelected ? '#fff' : '#1a1a1a',
