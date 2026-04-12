@@ -17,9 +17,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { ttsApi, userApi, PublicVoice } from '@/lib/api';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+import { ttsApi, userApi, PublicVoice, buildProxyUrl } from '@/lib/api';
 
 // Language to flag emoji mapping
 const LANGUAGE_FLAGS: { [language: string]: string } = {
@@ -348,7 +346,7 @@ export default function TextToSpeechSection() {
               <PlayArrowIcon sx={{ color: '#1a1a1a' }} />
               <audio
                 controls
-                src={`${API_BASE_URL}${audioUrl}`}
+                src={buildProxyUrl(audioUrl)}
                 style={{ flex: 1 }}
               >
                 Your browser does not support the audio element.

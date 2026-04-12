@@ -1,6 +1,16 @@
 // API configuration and utilities
 // Use same-origin proxy to avoid browser CORS issues.
-const API_BASE_URL = '/api/proxy';
+export const API_PROXY_BASE_URL = '/api/proxy';
+
+export function buildProxyUrl(pathOrUrl: string): string {
+  if (!pathOrUrl) return API_PROXY_BASE_URL;
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+
+  const normalizedPath = pathOrUrl.startsWith('/')
+    ? pathOrUrl
+    : `/${pathOrUrl}`;
+  return `${API_PROXY_BASE_URL}${normalizedPath}`;
+}
 
 export interface LoginRequest {
   username: string;
@@ -59,7 +69,7 @@ async function apiFetch<T>(
 
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
-  const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
+  const response = await fetch(`${API_PROXY_BASE_URL}${normalizedEndpoint}`, {
     ...options,
     headers,
   });

@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 
-const DEFAULT_BACKEND_URL =
-  'https://speak-lab-backend-kbrc-2f2ibtl6f-waqas-safdars-projects.vercel.app';
+const DEFAULT_BACKEND_URL = 'http://localhost:8000';
 
 const BACKEND_BASE_URL = (
   process.env.BACKEND_API_URL || DEFAULT_BACKEND_URL

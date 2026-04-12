@@ -25,9 +25,7 @@ import {
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { motion } from 'framer-motion';
-import { ttsApi, userApi, voiceCloningApi, ClonedVoice } from '@/lib/api';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+import { ttsApi, userApi, voiceCloningApi, ClonedVoice, buildProxyUrl } from '@/lib/api';
 
 export default function HomeSection() {
   const [textInput, setTextInput] = useState('');
@@ -254,7 +252,7 @@ export default function HomeSection() {
                     <PlayArrowIcon sx={{ color: '#1a1a1a' }} />
                     <audio
                       controls
-                      src={`${API_BASE_URL}${audioUrl}`}
+                      src={buildProxyUrl(audioUrl)}
                       style={{ flex: 1 }}
                     >
                       Your browser does not support the audio element.

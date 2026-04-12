@@ -23,8 +23,7 @@ import {
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+import { buildProxyUrl } from '@/lib/api';
 
 // Sample texts for random generation
 const sampleTexts = [
@@ -79,7 +78,7 @@ export default function Demo() {
     try {
       // Check if we have cached audio for this voice
       if (audioCache[voice.id]) {
-        const audio = new Audio(`${API_BASE_URL}${audioCache[voice.id]}`);
+        const audio = new Audio(buildProxyUrl(audioCache[voice.id]));
         audioRef.current = audio;
         audio.onended = () => setPlayingVoiceId(null);
         await audio.play();
@@ -87,7 +86,7 @@ export default function Demo() {
       }
 
       // Generate new audio
-      const response = await fetch(`${API_BASE_URL}/tts/demo`, {
+      const response = await fetch(buildProxyUrl('/tts/demo'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +107,7 @@ export default function Demo() {
       setAudioCache((prev) => ({ ...prev, [voice.id]: data.output_url }));
 
       // Play the audio
-      const audio = new Audio(`${API_BASE_URL}${data.output_url}`);
+      const audio = new Audio(buildProxyUrl(data.output_url));
       audioRef.current = audio;
       audio.onended = () => setPlayingVoiceId(null);
       await audio.play();
@@ -140,7 +139,7 @@ export default function Demo() {
     setIsGenerating(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/tts/demo`, {
+      const response = await fetch(buildProxyUrl('/tts/demo'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +159,7 @@ export default function Demo() {
       setGeneratedAudioUrl(data.output_url);
       
       // Auto-play the generated audio
-      const audio = new Audio(`${API_BASE_URL}${data.output_url}`);
+      const audio = new Audio(buildProxyUrl(data.output_url));
       audioRef.current = audio;
       audio.onended = () => setGeneratedAudioUrl(null);
       await audio.play();
