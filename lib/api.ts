@@ -217,13 +217,6 @@ export const adminApi = {
   },
 };
 
-// Voice Cloning API
-export interface VoiceCloningResponse {
-  message: string;
-  voice_id?: string;
-  status?: string;
-}
-
 export interface ClonedVoice {
   id: number;
   name: string;
@@ -241,35 +234,6 @@ export interface CreateClonedVoiceRequest {
 }
 
 export const voiceCloningApi = {
-  uploadReference: async (files: File[]): Promise<VoiceCloningResponse> => {
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('files', file);
-    });
-
-    const token = TokenManager.get();
-    const headers: Record<string, string> = {};
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/upload_reference`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        message: 'Failed to upload reference audio',
-      }));
-      throw new Error(error.message || 'Voice cloning upload failed');
-    }
-
-    return response.json();
-  },
-
   getClonedVoices: async (): Promise<ClonedVoice[]> => {
     return apiFetch<ClonedVoice[]>('/voices/cloned');
   },

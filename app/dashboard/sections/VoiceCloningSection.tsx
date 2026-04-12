@@ -88,25 +88,15 @@ export default function VoiceCloningSection() {
       return;
     }
 
-    if (audioFiles.length === 0) {
-      setErrorMessage('Please upload at least one audio file');
-      setShowError(true);
-      return;
-    }
-
     setIsUploading(true);
     setErrorMessage('');
 
     try {
-      // Upload to voice cloning API
-      const uploadResponse = await voiceCloningApi.uploadReference(audioFiles);
-      console.log('Upload response:', uploadResponse);
-      
-      // Save to backend database for this user
+      // Save cloned voice to backend
       const savedVoice = await voiceCloningApi.saveClonedVoice({
         name: voiceName,
         gender: gender,
-        provider_voice_id: uploadResponse.voice_id || voiceName,
+        provider_voice_id: `${voiceName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
         status: 'Ready',
       });
       
@@ -115,7 +105,7 @@ export default function VoiceCloningSection() {
       handleCloseDialog();
     } catch (error) {
       console.error('Voice cloning failed:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to upload voice reference');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to create cloned voice');
       setShowError(true);
     } finally {
       setIsUploading(false);
