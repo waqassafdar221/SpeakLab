@@ -106,7 +106,7 @@ export default function VoiceCloningSection() {
       const savedVoice = await voiceCloningApi.saveClonedVoice({
         name: voiceName,
         gender: gender,
-        provider_voice_id: uploadResponse.voice_id || uploadResponse.id || voiceName,
+        provider_voice_id: uploadResponse.voice_id || voiceName,
         status: 'Ready',
       });
       
