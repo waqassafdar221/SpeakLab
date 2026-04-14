@@ -351,7 +351,7 @@ export default function Header() {
       </Drawer>
 
       {/* Spacer to prevent content from going under fixed header */}
-      <Toolbar sx={{ mb: 2 }} />
+      <Toolbar />
     </>
   );
 }
