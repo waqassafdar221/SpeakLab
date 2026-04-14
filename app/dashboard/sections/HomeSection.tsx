@@ -169,6 +169,7 @@ export default function HomeSection() {
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1.4fr 1fr' },
+              alignItems: 'start',
               gap: 3,
             }}
           >
@@ -250,7 +251,6 @@ export default function HomeSection() {
                 onChange={(e) => setTextInput(e.target.value)}
                 sx={{
                   mb: 2,
-                  flexGrow: 1,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '12px',
                     backgroundColor: '#f6f5f1',
@@ -376,9 +376,10 @@ export default function HomeSection() {
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 border: '1px solid rgba(0, 0, 0, 0.05)',
                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
-                height: '100%',
+                maxHeight: { xs: 'none', md: 620 },
                 display: 'flex',
                 flexDirection: 'column',
+                overflow: 'hidden',
               }}
             >
               <Typography
@@ -433,7 +434,14 @@ export default function HomeSection() {
                   </Typography>
                 </Box>
               ) : (
-                <List sx={{ flexGrow: 1, overflow: 'auto' }}>
+                <List
+                  sx={{
+                    flexGrow: 1,
+                    overflowY: 'auto',
+                    maxHeight: { xs: 360, md: 500 },
+                    pr: 0.5,
+                  }}
+                >
                   {Object.entries(groupedVoices)
                     .sort(([a], [b]) => a.localeCompare(b))
                     .flatMap(([language, countries]) => [
