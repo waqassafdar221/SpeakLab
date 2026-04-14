@@ -20,9 +20,9 @@ import { useInView } from 'framer-motion';
 const teamMembers = [
   {
     id: 1,
-    name: 'Waqas Hamaiti',
+    name: 'Waqas Safdar',
     role: 'Founder & CEO',
-    bio: 'Visionary leader with 10+ years in AI and voice technology. Passionate about making AI voices accessible to everyone.',
+    bio: 'Visionary entrepreneur leading the company’s mission, strategy, and growth. Passionate about building innovative AI solutions and making advanced voice technology accessible to everyone.',
     avatar: '',
     social: {
       linkedin: '#',
@@ -32,9 +32,9 @@ const teamMembers = [
   },
   {
     id: 2,
-    name: 'Abdur Rehman',
+    name: 'Rizwan Attiq',
     role: 'Co-Founder',
-    bio: 'Strategic thinker driving business growth and partnerships. Expert in scaling tech startups globally.',
+    bio: 'Co-founder focused on business development, strategic partnerships, and expanding the company’s reach. Dedicated to turning bold ideas into sustainable growth opportunities.',
     avatar: '',
     social: {
       linkedin: '#',
@@ -44,9 +44,9 @@ const teamMembers = [
   },
   {
     id: 3,
-    name: 'Waqas Safdar',
-    role: 'ML Engineer',
-    bio: 'Machine learning expert specializing in neural voice synthesis. Building the future of AI-generated speech.',
+    name: 'Muhammad Sohaib Safdar',
+    role: 'CTO',
+    bio: 'Technology leader driving product innovation and technical excellence. Specializes in AI systems, scalable architecture, and building cutting-edge voice technology solutions.',
     avatar: '',
     social: {
       linkedin: '#',
@@ -56,9 +56,9 @@ const teamMembers = [
   },
   {
     id: 4,
-    name: 'Rizwan Attiq',
-    role: 'Developer',
-    bio: 'Full-stack developer crafting seamless user experiences. Turning complex AI into simple, beautiful interfaces.',
+    name: 'Alina Tariq',
+    role: 'Managing Director',
+    bio: 'Dynamic leader overseeing daily operations, team coordination, and organizational growth. Committed to ensuring smooth execution of business goals and long-term success.',
     avatar: '',
     social: {
       linkedin: '#',
