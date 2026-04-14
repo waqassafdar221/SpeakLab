@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -24,7 +24,12 @@ import {
   InputLabel,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { ttsApi, userApi, PublicVoice, buildProxyUrl } from '@/lib/api';
+import { ttsApi, userApi, PublicVoice, VoiceMetadata, buildProxyUrl } from '@/lib/api';
+
+type VoiceEntry = {
+  key: string;
+  data: VoiceMetadata;
+};
 
 export default function HomeSection() {
   const [textInput, setTextInput] = useState('');
@@ -36,8 +41,38 @@ export default function HomeSection() {
   const [username, setUsername] = useState('User');
   const [publicVoices, setPublicVoices] = useState<PublicVoice>({});
   const [selectedPublicVoice, setSelectedPublicVoice] = useState('');
+  const [voiceSearch, setVoiceSearch] = useState('');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [costDeducted, setCostDeducted] = useState(0);
+
+  const groupedVoices = useMemo(() => {
+    const query = voiceSearch.trim().toLowerCase();
+    const grouped: Record<string, Record<string, VoiceEntry[]>> = {};
+
+    Object.entries(publicVoices).forEach(([key, voice]) => {
+      const searchable = `${voice.name} ${voice.country} ${voice.language} ${voice.gender}`.toLowerCase();
+      if (query && !searchable.includes(query)) {
+        return;
+      }
+
+      if (!grouped[voice.language]) {
+        grouped[voice.language] = {};
+      }
+      if (!grouped[voice.language][voice.country]) {
+        grouped[voice.language][voice.country] = [];
+      }
+
+      grouped[voice.language][voice.country].push({ key, data: voice });
+    });
+
+    Object.values(grouped).forEach((countries) => {
+      Object.values(countries).forEach((voices) => {
+        voices.sort((a, b) => a.data.name.localeCompare(b.data.name));
+      });
+    });
+
+    return grouped;
+  }, [publicVoices, voiceSearch]);
 
   // Fetch public voices and user info on mount
   useEffect(() => {
@@ -51,7 +86,7 @@ export default function HomeSection() {
         setCredits(userData.credits);
         setUsername(userData.username);
 
-        const firstVoiceKey = Object.keys(voicesData)[0];
+        const firstVoiceKey = Object.keys(voicesData).sort()[0];
         if (firstVoiceKey) {
           setSelectedPublicVoice(firstVoiceKey);
         }
@@ -179,11 +214,29 @@ export default function HomeSection() {
                     },
                   }}
                 >
-                  {Object.entries(publicVoices).map(([key, voice]) => (
-                    <MenuItem key={key} value={key}>
-                      {voice.name} ({voice.country})
-                    </MenuItem>
-                  ))}
+                  {Object.entries(groupedVoices)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .flatMap(([language, countries]) => [
+                      <MenuItem
+                        key={`lang-${language}`}
+                        disabled
+                        sx={{ fontWeight: 700, color: '#1a1a1a', backgroundColor: 'rgba(0,0,0,0.03)' }}
+                      >
+                        {language}
+                      </MenuItem>,
+                      ...Object.entries(countries)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .flatMap(([country, voices]) => [
+                          <MenuItem key={`country-${language}-${country}`} disabled sx={{ pl: 3, fontWeight: 600 }}>
+                            {country}
+                          </MenuItem>,
+                          ...voices.map(({ key, data }) => (
+                            <MenuItem key={key} value={key} sx={{ pl: 5 }}>
+                              {data.name} ({data.gender})
+                            </MenuItem>
+                          )),
+                        ]),
+                    ])}
                 </Select>
               </FormControl>
 
@@ -339,7 +392,22 @@ export default function HomeSection() {
                 Available Voices
               </Typography>
 
-              {Object.keys(publicVoices).length === 0 ? (
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search by name, language, or country"
+                value={voiceSearch}
+                onChange={(e) => setVoiceSearch(e.target.value)}
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '10px',
+                    backgroundColor: '#f6f5f1',
+                  },
+                }}
+              />
+
+              {Object.keys(groupedVoices).length === 0 ? (
                 <Box
                   sx={{
                     display: 'flex',
@@ -355,71 +423,93 @@ export default function HomeSection() {
                     variant="body1"
                     sx={{ color: '#6a6a6a', mb: 2 }}
                   >
-                    No voices available
+                    No matching voices
                   </Typography>
                   <Typography
                     variant="body2"
                     sx={{ color: '#9a9a9a' }}
                   >
-                    Please refresh the page
+                    Try a different search term
                   </Typography>
                 </Box>
               ) : (
                 <List sx={{ flexGrow: 1, overflow: 'auto' }}>
-                  {Object.entries(publicVoices).map(([key, voice]) => {
-                    const isSelected = selectedPublicVoice === key;
-                    return (
-                      <ListItem
-                        key={key}
-                        sx={{
-                          borderRadius: '12px',
-                          mb: 1,
-                          backgroundColor: isSelected ? '#1a1a1a' : '#f6f5f1',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            backgroundColor: isSelected ? '#2a2a2a' : '#ebe9e0',
-                          },
-                        }}
-                        onClick={() => setSelectedPublicVoice(key)}
+                  {Object.entries(groupedVoices)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .flatMap(([language, countries]) => [
+                      <Typography
+                        key={`list-lang-${language}`}
+                        variant="caption"
+                        sx={{ px: 1, py: 0.5, color: '#4a4a4a', fontWeight: 700, display: 'block' }}
                       >
-                        <ListItemAvatar>
-                          <Avatar
-                            sx={{
-                              backgroundColor: isSelected ? '#fff' : '#1a1a1a',
-                              color: isSelected ? '#1a1a1a' : '#fff',
-                              width: 40,
-                              height: 40,
-                            }}
+                        {language}
+                      </Typography>,
+                      ...Object.entries(countries)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .flatMap(([country, voices]) => [
+                          <Typography
+                            key={`list-country-${language}-${country}`}
+                            variant="caption"
+                            sx={{ px: 1, py: 0.5, color: '#6a6a6a', fontWeight: 600, display: 'block' }}
                           >
-                            {voice.language?.charAt(0).toUpperCase() || 'V'}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={voice.name}
-                          secondary={`${voice.country} • ${voice.gender}`}
-                          primaryTypographyProps={{
-                            fontWeight: 600,
-                            color: isSelected ? '#fff' : '#1a1a1a',
-                          }}
-                          secondaryTypographyProps={{
-                            color: isSelected ? 'rgba(255, 255, 255, 0.7)' : '#6a6a6a',
-                          }}
-                        />
-                        {isSelected && (
-                          <Chip
-                            label="Selected"
-                            size="small"
-                            sx={{
-                              backgroundColor: '#fff',
-                              color: '#1a1a1a',
-                              fontWeight: 600,
-                            }}
-                          />
-                        )}
-                      </ListItem>
-                    );
-                  })}
+                            {country}
+                          </Typography>,
+                          ...voices.map(({ key, data }) => {
+                            const isSelected = selectedPublicVoice === key;
+                            return (
+                              <ListItem
+                                key={key}
+                                sx={{
+                                  borderRadius: '12px',
+                                  mb: 1,
+                                  backgroundColor: isSelected ? '#1a1a1a' : '#f6f5f1',
+                                  transition: 'all 0.2s ease',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    backgroundColor: isSelected ? '#2a2a2a' : '#ebe9e0',
+                                  },
+                                }}
+                                onClick={() => setSelectedPublicVoice(key)}
+                              >
+                                <ListItemAvatar>
+                                  <Avatar
+                                    sx={{
+                                      backgroundColor: isSelected ? '#fff' : '#1a1a1a',
+                                      color: isSelected ? '#1a1a1a' : '#fff',
+                                      width: 40,
+                                      height: 40,
+                                    }}
+                                  >
+                                    {data.language?.charAt(0).toUpperCase() || 'V'}
+                                  </Avatar>
+                                </ListItemAvatar>
+                                <ListItemText
+                                  primary={data.name}
+                                  secondary={`${data.country} • ${data.gender}`}
+                                  primaryTypographyProps={{
+                                    fontWeight: 600,
+                                    color: isSelected ? '#fff' : '#1a1a1a',
+                                  }}
+                                  secondaryTypographyProps={{
+                                    color: isSelected ? 'rgba(255, 255, 255, 0.7)' : '#6a6a6a',
+                                  }}
+                                />
+                                {isSelected && (
+                                  <Chip
+                                    label="Selected"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: '#fff',
+                                      color: '#1a1a1a',
+                                      fontWeight: 600,
+                                    }}
+                                  />
+                                )}
+                              </ListItem>
+                            );
+                          }),
+                        ]),
+                    ])}
                 </List>
               )}
             </Card>
