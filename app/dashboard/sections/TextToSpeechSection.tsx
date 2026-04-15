@@ -1,23 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Card,
   TextField,
   Button,
   Typography,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Chip,
   Snackbar,
   Alert,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  IconButton,
+  Tooltip,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Stack,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { ttsApi, userApi, PublicVoice, buildProxyUrl } from '@/lib/api';
+import { ttsApi, userApi, PublicVoice, VoiceMetadata, buildProxyUrl } from '@/lib/api';
 
 // Language to flag emoji mapping
 const LANGUAGE_FLAGS: { [language: string]: string } = {
@@ -36,11 +44,32 @@ const LANGUAGE_FLAGS: { [language: string]: string } = {
   'Afrikaans': '🇿🇦',
 };
 
+const PREVIEW_TEXT_BY_LANGUAGE: Record<string, string> = {
+  English: 'Hello! This is a quick voice preview from SpeakLab.',
+  Arabic: 'مرحبًا! هذه معاينة سريعة للصوت من سبيك لاب.',
+  Hindi: 'नमस्ते! यह स्पीकलैब की ओर से आवाज़ का एक छोटा डेमो है।',
+  Urdu: 'السلام علیکم! یہ اسپیک لیب کی طرف سے آواز کا ایک مختصر نمونہ ہے۔',
+  French: 'Bonjour ! Ceci est un court aperçu vocal de SpeakLab.',
+  Chinese: '你好！这是 SpeakLab 的语音试听示例。',
+  German: 'Hallo! Das ist eine kurze Sprachvorschau von SpeakLab.',
+  Japanese: 'こんにちは！これはSpeakLabの音声プレビューです。',
+  Vietnamese: 'Xin chào! Đây là bản nghe thử giọng nói từ SpeakLab.',
+  Turkish: 'Merhaba! Bu, SpeakLab için kısa bir ses önizlemesidir.',
+  Korean: '안녕하세요! SpeakLab 음성 미리듣기입니다.',
+  Spanish: '¡Hola! Esta es una vista previa rápida de voz de SpeakLab.',
+  Afrikaans: 'Hallo! Dit is ’n vinnige stemvoorskou van SpeakLab.',
+};
+
+type VoiceEntry = {
+  key: string;
+  data: VoiceMetadata;
+};
+
 export default function TextToSpeechSection() {
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [selectedLanguage, setSelectedLanguage] = useState('All');
   const [selectedVoice, setSelectedVoice] = useState('');
   const [publicVoices, setPublicVoices] = useState<PublicVoice>({});
-  const [voicesByCountry, setVoicesByCountry] = useState<{ [country: string]: Array<{ key: string; data: any }> }>({});
+  const [voiceSearch, setVoiceSearch] = useState('');
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [textInput, setTextInput] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -50,6 +79,9 @@ export default function TextToSpeechSection() {
   const [credits, setCredits] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [costDeducted, setCostDeducted] = useState(0);
+  const [previewLoadingVoice, setPreviewLoadingVoice] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const previewCacheRef = useRef<Record<string, string>>({});
 
   // Fetch public voices and user credits on mount
   useEffect(() => {
@@ -66,22 +98,10 @@ export default function TextToSpeechSection() {
         const languages = Array.from(new Set(Object.values(voicesData).map(v => v.language))).sort();
         setAvailableLanguages(languages);
         
-        // Group voices by country
-        const grouped: { [country: string]: Array<{ key: string; data: any }> } = {};
-        Object.entries(voicesData).forEach(([key, voice]) => {
-          const country = voice.country;
-          if (!grouped[country]) {
-            grouped[country] = [];
-          }
-          grouped[country].push({ key, data: voice });
-        });
-        setVoicesByCountry(grouped);
-        
         // Set first voice as default
         const firstVoiceKey = Object.keys(voicesData)[0];
         if (firstVoiceKey) {
           setSelectedVoice(firstVoiceKey);
-          setSelectedLanguage(voicesData[firstVoiceKey].language);
         }
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -94,25 +114,43 @@ export default function TextToSpeechSection() {
     fetchData();
   }, []);
 
-  // Filter voices by selected language
-  const filteredVoicesByCountry = React.useMemo(() => {
-    const filtered: { [country: string]: Array<{ key: string; data: any }> } = {};
-    Object.entries(voicesByCountry).forEach(([country, voices]) => {
-      const countryVoices = voices.filter(v => v.data.language === selectedLanguage);
-      if (countryVoices.length > 0) {
-        filtered[country] = countryVoices;
-      }
-    });
-    return filtered;
-  }, [voicesByCountry, selectedLanguage]);
+  const groupedVoices = useMemo(() => {
+    const query = voiceSearch.trim().toLowerCase();
+    const grouped: Record<string, VoiceEntry[]> = {};
 
-  // Reset voice selection when language changes
+    Object.entries(publicVoices).forEach(([key, voice]) => {
+      if (selectedLanguage !== 'All' && voice.language !== selectedLanguage) {
+        return;
+      }
+
+      const searchable = `${voice.name} ${voice.country} ${voice.language} ${voice.gender}`.toLowerCase();
+      if (query && !searchable.includes(query)) return;
+
+      if (!grouped[voice.language]) grouped[voice.language] = [];
+      grouped[voice.language].push({ key, data: voice });
+    });
+
+    Object.values(grouped).forEach((voices) => {
+      voices.sort((a, b) => a.data.name.localeCompare(b.data.name));
+    });
+
+    return grouped;
+  }, [publicVoices, selectedLanguage, voiceSearch]);
+
   useEffect(() => {
-    const voicesForLanguage = Object.values(filteredVoicesByCountry).flat();
-    if (voicesForLanguage.length > 0 && !voicesForLanguage.find(v => v.key === selectedVoice)) {
-      setSelectedVoice(voicesForLanguage[0].key);
+    const flatVoices = Object.values(groupedVoices).flat();
+    if (flatVoices.length > 0 && !flatVoices.some(v => v.key === selectedVoice)) {
+      setSelectedVoice(flatVoices[0].key);
     }
-  }, [selectedLanguage, filteredVoicesByCountry, selectedVoice]);
+  }, [groupedVoices, selectedVoice]);
+
+  useEffect(() => {
+    return () => {
+      if (previewAudioRef.current) {
+        previewAudioRef.current.pause();
+      }
+    };
+  }, []);
 
   const handleGenerate = async () => {
     setError('');
@@ -151,8 +189,71 @@ export default function TextToSpeechSection() {
     setShowSuccess(false);
   };
 
+  const getGenderAvatar = (gender?: string) => {
+    const normalized = (gender || '').toLowerCase();
+    if (normalized.includes('female')) {
+      return { symbol: '♀', bg: '#f8d7e8', color: '#9c275f' };
+    }
+    if (normalized.includes('male')) {
+      return { symbol: '♂', bg: '#d9ecff', color: '#1b5e9a' };
+    }
+    return { symbol: '•', bg: '#ececec', color: '#555' };
+  };
+
+  const getPreviewText = (language?: string) => {
+    if (!language) return PREVIEW_TEXT_BY_LANGUAGE.English;
+    return PREVIEW_TEXT_BY_LANGUAGE[language] || PREVIEW_TEXT_BY_LANGUAGE.English;
+  };
+
+  const handlePreviewVoice = async (voiceKey: string) => {
+    try {
+      setError('');
+      setPreviewLoadingVoice(voiceKey);
+
+      let playableUrl = previewCacheRef.current[voiceKey];
+
+      if (!playableUrl) {
+        const voiceLanguage = publicVoices[voiceKey]?.language;
+        const response = await fetch(buildProxyUrl('/tts/demo'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: getPreviewText(voiceLanguage),
+            public_voice: voiceKey,
+          }),
+        });
+
+        const data = await response.json().catch(() => ({} as { detail?: string; output_url?: string }));
+        if (!response.ok) {
+          throw new Error((data as { detail?: string }).detail || 'Failed to generate voice preview');
+        }
+
+        const outputUrl = (data as { output_url?: string }).output_url;
+        if (!outputUrl) {
+          throw new Error('Preview audio URL is missing');
+        }
+
+        playableUrl = buildProxyUrl(outputUrl);
+        previewCacheRef.current[voiceKey] = playableUrl;
+      }
+
+      if (previewAudioRef.current) {
+        previewAudioRef.current.pause();
+        previewAudioRef.current.currentTime = 0;
+      }
+
+      const audio = new Audio(playableUrl);
+      previewAudioRef.current = audio;
+      await audio.play();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to play voice preview');
+    } finally {
+      setPreviewLoadingVoice(null);
+    }
+  };
+
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+    <Box>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography
@@ -167,44 +268,51 @@ export default function TextToSpeechSection() {
           Text to Speech
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          Convert text to speech using public AI voices
+          Convert text to speech with rich public voices
         </Typography>
       </Box>
 
-      {/* Main Card */}
-      <Card
-        sx={{
-          p: 4,
-          borderRadius: '16px',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
-        }}
-      >
-        {isLoadingData ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            {/* Language Selection */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Select language</InputLabel>
+      {isLoadingData ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1.4fr 1fr' },
+            alignItems: 'start',
+            gap: 3,
+          }}
+        >
+          <Card
+            sx={{
+              p: 3,
+              borderRadius: '16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 2 }}>
+              Studio Text to Speech
+            </Typography>
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Language</InputLabel>
               <Select
                 value={selectedLanguage}
-                label="Select language"
+                label="Language"
                 onChange={(e) => setSelectedLanguage(e.target.value)}
                 sx={{
                   borderRadius: '12px',
                   backgroundColor: '#f6f5f1',
-                  '&:hover': {
-                    backgroundColor: '#ebe9e0',
-                  },
-                  '&.Mui-focused': {
-                    backgroundColor: '#fff',
-                  },
                 }}
               >
+                <MenuItem value="All">🌐 All Languages</MenuItem>
                 {availableLanguages.map((language) => (
                   <MenuItem key={language} value={language}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -216,162 +324,285 @@ export default function TextToSpeechSection() {
               </Select>
             </FormControl>
 
-            {/* Voice Selection */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Select voice</InputLabel>
-              <Select
-                value={selectedVoice}
-                label="Select voice"
-                onChange={(e) => setSelectedVoice(e.target.value)}
-                disabled={isLoadingData}
-                sx={{
+            <TextField
+              multiline
+              minRows={10}
+              maxRows={15}
+              fullWidth
+              label="Text to speak"
+              placeholder="Enter the text you want to convert to speech..."
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              helperText={`${textInput.length} characters`}
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
                   backgroundColor: '#f6f5f1',
-                  '&:hover': {
-                    backgroundColor: '#ebe9e0',
+                  '&:hover fieldset': {
+                    borderColor: '#1a1a1a',
                   },
-                  '&.Mui-focused': {
-                    backgroundColor: '#fff',
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#1a1a1a',
+                    borderWidth: '2px',
                   },
-                }}
-              >
-                {Object.entries(filteredVoicesByCountry)
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([country, voices]) => [
-                    <MenuItem key={`header-${country}`} disabled sx={{ fontWeight: 700, color: '#1a1a1a', backgroundColor: 'rgba(0,0,0,0.03)' }}>
-                      {country}
-                    </MenuItem>,
-                    ...voices.map(({ key, data }) => (
-                      <MenuItem key={key} value={key} sx={{ pl: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                          <Typography sx={{ flexGrow: 1 }}>{data.name}</Typography>
-                          <Chip
-                            label={data.gender}
-                            size="small"
-                            sx={{
-                              height: 20,
-                              fontSize: '0.7rem',
-                              backgroundColor: data.gender === 'Female' ? '#e91e63' : '#2196f3',
-                              color: '#fff',
-                            }}
-                          />
-                        </Box>
-                      </MenuItem>
-                    ))
-                  ])}
-              </Select>
-            </FormControl>
+                },
+              }}
+            />
 
-        {/* Text Input */}
-        <TextField
-          multiline
-          minRows={10}
-          maxRows={15}
-          fullWidth
-          label="Text to speak"
-          placeholder="Enter the text you want to convert to speech..."
-          value={textInput}
-          onChange={(e) => setTextInput(e.target.value)}
-          helperText={`${textInput.length} characters`}
-          sx={{
-            mb: 2,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '12px',
-              backgroundColor: '#f6f5f1',
-              '&:hover fieldset': {
-                borderColor: '#1a1a1a',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#1a1a1a',
-                borderWidth: '2px',
-              },
-            },
-          }}
-        />
+            {error && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: '8px' }}>
+                {error}
+              </Alert>
+            )}
 
-        {/* Error Message */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: '8px' }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Generate Button */}
-        <Button
-          variant="contained"
-          size="large"
-          fullWidth
-          onClick={handleGenerate}
-          disabled={!selectedVoice || !textInput.trim() || isLoading}
-          sx={{
-            backgroundColor: '#1a1a1a',
-            color: '#fff',
-            py: 1.5,
-            borderRadius: '12px',
-            fontSize: '1rem',
-            fontWeight: 600,
-            textTransform: 'none',
-            mb: 2,
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              backgroundColor: '#2a2a2a',
-              transform: 'scale(1.02)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-            },
-            '&:disabled': {
-              backgroundColor: '#d0d0d0',
-              color: '#6a6a6a',
-            },
-          }}
-        >
-          {isLoading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Generate Speech'}
-        </Button>
-
-        {/* Audio Player */}
-        {audioUrl && (
-          <Box sx={{ mb: 2 }}>
-            <Alert severity="success" sx={{ mb: 2, borderRadius: '8px' }}>
-              Speech generated successfully! {costDeducted} credits deducted.
-            </Alert>
-            <Box
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={handleGenerate}
+              disabled={!selectedVoice || !textInput.trim() || isLoading}
               sx={{
-                p: 2,
+                backgroundColor: '#1a1a1a',
+                color: '#fff',
+                py: 1.5,
                 borderRadius: '12px',
-                backgroundColor: '#f6f5f1',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                mb: 2,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  backgroundColor: '#2a2a2a',
+                  transform: 'scale(1.02)',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+                },
+                '&:disabled': {
+                  backgroundColor: '#d0d0d0',
+                  color: '#6a6a6a',
+                },
               }}
             >
-              <PlayArrowIcon sx={{ color: '#1a1a1a' }} />
-              <audio
-                controls
-                src={buildProxyUrl(audioUrl)}
-                style={{ flex: 1 }}
-              >
-                Your browser does not support the audio element.
-              </audio>
-            </Box>
-          </Box>
-        )}
+              {isLoading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Generate Speech'}
+            </Button>
 
-        {/* Credits Info */}
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="body2" sx={{ color: '#6a6a6a', mb: 1 }}>
-            This will use your account credits (1 credit per character)
-          </Typography>
-          <Chip
-            label={`Credits left: ${credits}`}
+            {audioUrl && (
+              <Box sx={{ mb: 2 }}>
+                <Alert severity="success" sx={{ mb: 2, borderRadius: '8px' }}>
+                  Speech generated successfully! {costDeducted} credits deducted.
+                </Alert>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: '12px',
+                    backgroundColor: '#f6f5f1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                  }}
+                >
+                  <PlayArrowIcon sx={{ color: '#1a1a1a' }} />
+                  <audio controls src={buildProxyUrl(audioUrl)} style={{ flex: 1 }}>
+                    Your browser does not support the audio element.
+                  </audio>
+                </Box>
+              </Box>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+              <Chip
+                label={`Credits: ${credits}`}
+                sx={{
+                  backgroundColor: '#1a1a1a',
+                  color: '#fff',
+                  fontWeight: 600,
+                }}
+              />
+              <Typography variant="caption" sx={{ color: '#6a6a6a' }}>
+                1 credit per character
+              </Typography>
+            </Box>
+          </Card>
+
+          <Card
             sx={{
-              backgroundColor: '#1a1a1a',
-              color: '#fff',
-              fontWeight: 600,
+              p: 3,
+              borderRadius: '16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+              maxHeight: { xs: 'none', md: 620 },
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
             }}
-          />
+          >
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 2 }}>
+              Available Voices
+            </Typography>
+
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search voice, language, gender"
+              value={voiceSearch}
+              onChange={(e) => setVoiceSearch(e.target.value)}
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '10px',
+                  backgroundColor: '#f6f5f1',
+                },
+              }}
+            />
+
+            {Object.keys(groupedVoices).length === 0 ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1 }}>
+                <Typography variant="body2" sx={{ color: '#777' }}>No matching voices found</Typography>
+              </Box>
+            ) : (
+              <List sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: { xs: 360, md: 500 }, pr: 0.5 }}>
+                {Object.entries(groupedVoices)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .flatMap(([language, voices]) => [
+                    <Typography
+                      key={`list-lang-${language}`}
+                      variant="caption"
+                      sx={{
+                        px: 1,
+                        py: 0.75,
+                        color: '#4a4a4a',
+                        fontWeight: 800,
+                        display: 'block',
+                        letterSpacing: '0.03em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {language}
+                    </Typography>,
+                    ...voices.map(({ key, data }) => {
+                      const isSelected = selectedVoice === key;
+                      const genderAvatar = getGenderAvatar(data.gender);
+
+                      return (
+                        <ListItem
+                          key={key}
+                          sx={{
+                            borderRadius: '14px',
+                            mb: 1,
+                            background: isSelected
+                              ? 'linear-gradient(135deg, #1f1f1f 0%, #343434 100%)'
+                              : 'linear-gradient(135deg, #fbfbfb 0%, #f2f1eb 100%)',
+                            border: isSelected ? '1px solid #2f2f2f' : '1px solid rgba(0,0,0,0.06)',
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer',
+                            boxShadow: isSelected
+                              ? '0 8px 20px rgba(0, 0, 0, 0.2)'
+                              : '0 4px 10px rgba(0, 0, 0, 0.05)',
+                            '&:hover': {
+                              transform: 'translateY(-1px)',
+                              boxShadow: isSelected
+                                ? '0 10px 24px rgba(0, 0, 0, 0.24)'
+                                : '0 8px 18px rgba(0, 0, 0, 0.1)',
+                            },
+                          }}
+                          onClick={() => setSelectedVoice(key)}
+                          secondaryAction={
+                            <Tooltip title="Play voice test">
+                              <span>
+                                <IconButton
+                                  edge="end"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePreviewVoice(key);
+                                  }}
+                                  disabled={previewLoadingVoice === key}
+                                  sx={{
+                                    color: isSelected ? '#fff' : '#1a1a1a',
+                                    border: isSelected
+                                      ? '1px solid rgba(255,255,255,0.35)'
+                                      : '1px solid rgba(0,0,0,0.15)',
+                                    backgroundColor: isSelected
+                                      ? 'rgba(255,255,255,0.08)'
+                                      : 'rgba(255,255,255,0.7)',
+                                  }}
+                                >
+                                  {previewLoadingVoice === key ? (
+                                    <CircularProgress size={18} sx={{ color: isSelected ? '#fff' : '#1a1a1a' }} />
+                                  ) : (
+                                    <PlayArrowIcon fontSize="small" />
+                                  )}
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          }
+                        >
+                          <ListItemAvatar>
+                            <Avatar
+                              sx={{
+                                backgroundColor: genderAvatar.bg,
+                                color: genderAvatar.color,
+                                width: 42,
+                                height: 42,
+                                fontWeight: 700,
+                                fontSize: '1.1rem',
+                                border: '1px solid rgba(0,0,0,0.08)',
+                              }}
+                            >
+                              {genderAvatar.symbol}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={data.name}
+                            secondary={
+                              <Stack direction="row" spacing={0.8} sx={{ mt: 0.5, flexWrap: 'wrap' }}>
+                                <Chip
+                                  label={data.gender}
+                                  size="small"
+                                  sx={{
+                                    height: 22,
+                                    backgroundColor: isSelected ? 'rgba(255,255,255,0.12)' : '#e9e7df',
+                                    color: isSelected ? '#fff' : '#333',
+                                  }}
+                                />
+                                <Chip
+                                  label={data.country}
+                                  size="small"
+                                  sx={{
+                                    height: 22,
+                                    backgroundColor: isSelected ? 'rgba(255,255,255,0.12)' : '#e9e7df',
+                                    color: isSelected ? '#fff' : '#333',
+                                  }}
+                                />
+                              </Stack>
+                            }
+                            primaryTypographyProps={{
+                              fontWeight: 700,
+                              color: isSelected ? '#fff' : '#1a1a1a',
+                              pr: 7,
+                            }}
+                          />
+                          {isSelected && (
+                            <Chip
+                              label="Selected"
+                              size="small"
+                              sx={{
+                                ml: 1,
+                                backgroundColor: '#fff',
+                                color: '#1a1a1a',
+                                fontWeight: 700,
+                              }}
+                            />
+                          )}
+                        </ListItem>
+                      );
+                    }),
+                  ])}
+              </List>
+            )}
+          </Card>
         </Box>
-        </>
-        )}
-      </Card>
+      )}
 
       {/* Success Snackbar */}
       <Snackbar
