@@ -44,20 +44,72 @@ const LANGUAGE_FLAGS: { [language: string]: string } = {
   'Afrikaans': '🇿🇦',
 };
 
-const PREVIEW_TEXT_BY_LANGUAGE: Record<string, string> = {
-  English: 'Hello! This is a quick voice preview from SpeakLab.',
-  Arabic: 'مرحبًا! هذه معاينة سريعة للصوت من سبيك لاب.',
-  Hindi: 'नमस्ते! यह स्पीकलैब की ओर से आवाज़ का एक छोटा डेमो है।',
-  Urdu: 'السلام علیکم! یہ اسپیک لیب کی طرف سے آواز کا ایک مختصر نمونہ ہے۔',
-  French: 'Bonjour ! Ceci est un court aperçu vocal de SpeakLab.',
-  Chinese: '你好！这是 SpeakLab 的语音试听示例。',
-  German: 'Hallo! Das ist eine kurze Sprachvorschau von SpeakLab.',
-  Japanese: 'こんにちは！これはSpeakLabの音声プレビューです。',
-  Vietnamese: 'Xin chào! Đây là bản nghe thử giọng nói từ SpeakLab.',
-  Turkish: 'Merhaba! Bu, SpeakLab için kısa bir ses önizlemesidir.',
-  Korean: '안녕하세요! SpeakLab 음성 미리듣기입니다.',
-  Spanish: '¡Hola! Esta es una vista previa rápida de voz de SpeakLab.',
-  Afrikaans: 'Hallo! Dit is ’n vinnige stemvoorskou van SpeakLab.',
+const PREVIEW_TEXT_BY_LANGUAGE: Record<string, string[]> = {
+  English: [
+    'The morning breeze carries a calm and gentle melody.',
+    'Please listen carefully as the voice speaks with clarity.',
+    'A quiet evening often brings peace to the heart.',
+  ],
+  Arabic: [
+    'في صباحٍ هادئٍ تشرق الشمس بلطفٍ على المدينة.',
+    'الصوت الواضح يساعدنا على فهم الكلمات بسهولة.',
+    'في المساء الجميل تهدأ القلوب وتطمئن النفوس.',
+  ],
+  Hindi: [
+    'सुबह की ठंडी हवा मन को शांति देती है।',
+    'स्पष्ट आवाज़ सुनने का अनुभव बहुत सुखद होता है।',
+    'शाम का शांत वातावरण दिल को सुकून देता है।',
+  ],
+  Urdu: [
+    'آج موسم خوشگوار ہے اور ہوا بہت نرم چل رہی ہے۔',
+    'صاف آواز سننے سے بات آسانی سے سمجھ آتی ہے۔',
+    'پرسکون شام دل کو سکون دیتی ہے۔',
+  ],
+  French: [
+    'La brise du matin apporte une sensation de calme.',
+    'Une voix claire rend l’écoute plus agréable.',
+    'Le soir tranquille apaise doucement le cœur.',
+  ],
+  Chinese: [
+    '清晨的微风让人感到宁静。',
+    '清晰的声音让表达更加自然。',
+    '安静的夜晚总能带来平和。',
+  ],
+  German: [
+    'Die frische Morgenluft fühlt sich angenehm ruhig an.',
+    'Eine klare Stimme macht das Zuhören leichter.',
+    'Ein ruhiger Abend bringt oft innere Gelassenheit.',
+  ],
+  Japanese: [
+    '朝のやわらかな風は心を落ち着かせます。',
+    '聞き取りやすい声はとても心地よいです。',
+    '静かな夜には穏やかな時間が流れます。',
+  ],
+  Vietnamese: [
+    'Làn gió buổi sáng mang lại cảm giác rất yên bình.',
+    'Giọng nói rõ ràng giúp người nghe dễ hiểu hơn.',
+    'Buổi tối tĩnh lặng luôn khiến lòng nhẹ nhàng.',
+  ],
+  Turkish: [
+    'Sabah esintisi insana huzur veren bir serinlik getirir.',
+    'Net bir ses, dinlemeyi çok daha keyifli yapar.',
+    'Sakin bir akşam kalbe dinginlik verir.',
+  ],
+  Korean: [
+    '아침의 부드러운 바람은 마음을 편안하게 합니다.',
+    '또렷한 목소리는 듣기에 매우 좋습니다.',
+    '조용한 저녁은 마음에 평온함을 줍니다.',
+  ],
+  Spanish: [
+    'La brisa de la mañana transmite una gran tranquilidad.',
+    'Una voz clara hace que escuchar sea más agradable.',
+    'Una tarde serena siempre calma el corazón.',
+  ],
+  Afrikaans: [
+    'Die sagte oggendwind bring ’n rustige gevoel.',
+    '’n Duidelike stem maak luister maklik en aangenaam.',
+    '’n Stil aand bring kalmte in die hart.',
+  ],
 };
 
 type VoiceEntry = {
@@ -81,7 +133,6 @@ export default function TextToSpeechSection() {
   const [costDeducted, setCostDeducted] = useState(0);
   const [previewLoadingVoice, setPreviewLoadingVoice] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-  const previewCacheRef = useRef<Record<string, string>>({});
 
   // Fetch public voices and user credits on mount
   useEffect(() => {
@@ -200,42 +251,37 @@ export default function TextToSpeechSection() {
     return { symbol: '•', bg: '#ececec', color: '#555' };
   };
 
-  const getPreviewText = (language?: string) => {
-    if (!language) return PREVIEW_TEXT_BY_LANGUAGE.English;
-    return PREVIEW_TEXT_BY_LANGUAGE[language] || PREVIEW_TEXT_BY_LANGUAGE.English;
+  const getRandomPreviewText = (language?: string) => {
+    const options = PREVIEW_TEXT_BY_LANGUAGE[language || ''] || PREVIEW_TEXT_BY_LANGUAGE.English;
+    return options[Math.floor(Math.random() * options.length)];
   };
 
   const handlePreviewVoice = async (voiceKey: string) => {
     try {
       setError('');
       setPreviewLoadingVoice(voiceKey);
+      const voiceLanguage = publicVoices[voiceKey]?.language;
+      const previewText = getRandomPreviewText(voiceLanguage);
+      const response = await fetch(buildProxyUrl('/tts/demo'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: previewText,
+          public_voice: voiceKey,
+        }),
+      });
 
-      let playableUrl = previewCacheRef.current[voiceKey];
-
-      if (!playableUrl) {
-        const voiceLanguage = publicVoices[voiceKey]?.language;
-        const response = await fetch(buildProxyUrl('/tts/demo'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: getPreviewText(voiceLanguage),
-            public_voice: voiceKey,
-          }),
-        });
-
-        const data = await response.json().catch(() => ({} as { detail?: string; output_url?: string }));
-        if (!response.ok) {
-          throw new Error((data as { detail?: string }).detail || 'Failed to generate voice preview');
-        }
-
-        const outputUrl = (data as { output_url?: string }).output_url;
-        if (!outputUrl) {
-          throw new Error('Preview audio URL is missing');
-        }
-
-        playableUrl = buildProxyUrl(outputUrl);
-        previewCacheRef.current[voiceKey] = playableUrl;
+      const data = await response.json().catch(() => ({} as { detail?: string; output_url?: string }));
+      if (!response.ok) {
+        throw new Error((data as { detail?: string }).detail || 'Failed to generate voice preview');
       }
+
+      const outputUrl = (data as { output_url?: string }).output_url;
+      if (!outputUrl) {
+        throw new Error('Preview audio URL is missing');
+      }
+
+      const playableUrl = buildProxyUrl(outputUrl);
 
       if (previewAudioRef.current) {
         previewAudioRef.current.pause();
