@@ -120,7 +120,7 @@ export default function Header() {
             WebkitTextFillColor: 'transparent',
           }}
         >
-          SpeakLab
+          SpeakStudio
         </Typography>
         <IconButton onClick={handleDrawerToggle} edge="end">
           <CloseIcon />
@@ -233,7 +233,7 @@ export default function Header() {
                 },
               }}
             >
-              SpeakLab
+              SpeakStudio
             </Typography>
 
             {/* Center: Navigation Links (Desktop) */}

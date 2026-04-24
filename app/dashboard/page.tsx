@@ -175,7 +175,7 @@ export default function DashboardPage() {
             letterSpacing: '-0.02em',
           }}
         >
-          SpeakLab
+          SpeakStudio
         </Typography>
       </Box>
 

@@ -27,10 +27,10 @@ import { buildProxyUrl } from '@/lib/api';
 
 // Sample texts for random generation
 const sampleTexts = [
-  "Welcome to SpeakLab, where cutting-edge AI technology meets natural human speech. Experience the future of voice generation today.",
+  "Welcome to SpeakStudio, where cutting-edge AI technology meets natural human speech. Experience the future of voice generation today.",
   "Artificial intelligence is transforming the way we communicate. Our advanced text-to-speech technology delivers studio-quality results in seconds.",
   "From audiobooks to virtual assistants, our AI voices bring content to life with remarkable clarity and emotion.",
-  "Imagine a world where every piece of text can be instantly converted into natural, expressive speech. That world is here with SpeakLab.",
+  "Imagine a world where every piece of text can be instantly converted into natural, expressive speech. That world is here with SpeakStudio.",
   "The power of voice has never been more accessible. Create professional voiceovers without expensive equipment or recording studios.",
   "Whether you're creating content for education, entertainment, or business, our AI voices deliver consistent, high-quality results every time.",
 ];
@@ -92,7 +92,7 @@ export default function Demo() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: 'Hello, this is SpeakLab. Experience natural, AI-powered voice generation.',
+          text: 'Hello, this is SpeakStudio. Experience natural, AI-powered voice generation.',
           public_voice: voice.key,
         }),
       });

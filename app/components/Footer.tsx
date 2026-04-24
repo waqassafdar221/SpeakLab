@@ -32,7 +32,7 @@ export default function Footer() {
               textAlign: { xs: 'center', sm: 'left' },
             }}
           >
-             {currentYear} SpeakLab. All rights reserved.
+             {currentYear} SpeakStudio. All rights reserved.
           </Typography>
 
           {/* Links */}

@@ -25,7 +25,7 @@ const faqs = [
     id: 2,
     question: 'How many languages and voices are supported?',
     answer:
-      'SpeakLab supports 50+ languages with 200+ premium AI voices. Our voices include various accents, ages, and tones to match your content needs. Higher-tier plans unlock access to more voice options and multilingual capabilities.',
+      'SpeakStudio supports 50+ languages with 200+ premium AI voices. Our voices include various accents, ages, and tones to match your content needs. Higher-tier plans unlock access to more voice options and multilingual capabilities.',
   },
   {
     id: 3,
@@ -43,7 +43,7 @@ const faqs = [
     id: 5,
     question: 'Do you offer API access for developers?',
     answer:
-      'Yes! API access is available starting from the Studio plan (PKR 5,000/month). Our RESTful API allows you to integrate SpeakLab into your applications with comprehensive documentation and SDKs for popular languages.',
+      'Yes! API access is available starting from the Studio plan (PKR 5,000/month). Our RESTful API allows you to integrate SpeakStudio into your applications with comprehensive documentation and SDKs for popular languages.',
   },
   {
     id: 6,
@@ -61,7 +61,7 @@ const faqs = [
     id: 8,
     question: 'Is there a refund policy?',
     answer:
-      'We offer a 14-day money-back guarantee for all annual plans. If you\'re not satisfied with SpeakLab, contact our support team within 14 days of purchase for a full refund. Monthly plans are non-refundable but you can cancel anytime.',
+      'We offer a 14-day money-back guarantee for all annual plans. If you\'re not satisfied with SpeakStudio, contact our support team within 14 days of purchase for a full refund. Monthly plans are non-refundable but you can cancel anytime.',
   },
 ];
 
@@ -125,7 +125,7 @@ export default function FAQ() {
                 mx: 'auto',
               }}
             >
-              Everything you need to know about SpeakLab
+              Everything you need to know about SpeakStudio
             </Typography>
           </Box>
         </motion.div>

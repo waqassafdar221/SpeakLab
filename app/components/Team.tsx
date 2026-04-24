@@ -122,7 +122,7 @@ export default function Team() {
                 mx: 'auto',
               }}
             >
-              The passionate minds behind SpeakLab
+              The passionate minds behind SpeakStudio
             </Typography>
           </Box>
         </motion.div>

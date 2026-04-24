@@ -131,7 +131,7 @@ export default function AdminPage() {
       {/* Logo/Brand */}
       <Box sx={{ p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
         <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
-          SpeakLab
+          SpeakStudio
         </Typography>
         <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
           Admin Panel

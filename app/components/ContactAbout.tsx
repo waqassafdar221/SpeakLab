@@ -58,7 +58,7 @@ export default function ContactAbout() {
             alignItems: 'start',
           }}
         >
-          {/* Left Column - About SpeakLab */}
+          {/* Left Column - About SpeakStudio */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
@@ -85,7 +85,7 @@ export default function ContactAbout() {
                     WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  SpeakLab
+                  SpeakStudio
                 </Box>
               </Typography>
 
@@ -98,7 +98,7 @@ export default function ContactAbout() {
                     lineHeight: 1.8,
                   }}
                 >
-                  SpeakLab is a cutting-edge AI voice generation platform that transforms text into
+                  SpeakStudio is a cutting-edge AI voice generation platform that transforms text into
                   natural, human-like speech. Our mission is to democratize voice technology and
                   make professional-quality AI voices accessible to everyone.
                 </Typography>
@@ -126,7 +126,7 @@ export default function ContactAbout() {
                 >
                   Our advanced neural voice synthesis technology delivers studio-quality audio for
                   podcasts, audiobooks, videos, e-learning content, and more. Join thousands of
-                  satisfied users who trust SpeakLab for their voice generation needs.
+                  satisfied users who trust SpeakStudio for their voice generation needs.
                 </Typography>
 
                 {/* Key Stats */}
