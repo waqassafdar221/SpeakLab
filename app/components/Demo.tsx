@@ -330,12 +330,6 @@ export default function Demo() {
                   </Alert>
                 )}
 
-                {generatedAudioUrl && (
-                  <Alert severity="success" sx={{ mb: 1.5, borderRadius: '8px' }}>
-                    Playing audio...
-                  </Alert>
-                )}
-
                 <Button
                   variant="contained"
                   size="large"
@@ -350,6 +344,7 @@ export default function Demo() {
                     fontSize: '1rem',
                     fontWeight: 600,
                     textTransform: 'none',
+                    mt: 'auto',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {

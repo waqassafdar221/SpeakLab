@@ -21,6 +21,7 @@ import CloseIcon from '@mui/icons-material/Close';
 const navLinks = [
   { label: 'Home', href: '#home' },
   { label: 'Demo', href: '#demo' },
+  { label: 'Transcription', href: '#transcription' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Team', href: '#team' },
   { label: 'FAQ', href: '#faq' },

@@ -1,6 +1,7 @@
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Demo from "./components/Demo";
+import Transcription from "./components/Transcription";
 import Pricing from "./components/Pricing";
 import Team from "./components/Team";
 import JoinCommunity from "./components/JoinCommunity";
@@ -17,6 +18,9 @@ export default function Home() {
       </section>
       <section id="demo">
         <Demo />
+      </section>
+      <section id="transcription">
+        <Transcription />
       </section>
       <section id="pricing">
         <Pricing />

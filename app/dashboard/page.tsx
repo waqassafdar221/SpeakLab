@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import SubtitlesIcon from '@mui/icons-material/Subtitles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -30,6 +31,7 @@ import { TokenManager, userApi } from '@/lib/api';
 // Import dashboard sections
 import HomeSection from './sections/HomeSection';
 import TextToSpeechSection from './sections/TextToSpeechSection';
+import TranscriptionSection from './sections/TranscriptionSection';
 import CreditsSection from './sections/CreditsSection';
 import SettingsSection from './sections/SettingsSection';
 
@@ -38,6 +40,7 @@ const drawerWidth = 240;
 const navItems = [
   { id: 'home', label: 'Home', icon: <HomeIcon /> },
   { id: 'tts', label: 'Text to Speech', icon: <RecordVoiceOverIcon /> },
+  { id: 'transcription', label: 'Audio to Text', icon: <SubtitlesIcon /> },
   { id: 'credits', label: 'Credits', icon: <AccountBalanceWalletIcon /> },
   { id: 'settings', label: 'Settings', icon: <SettingsIcon /> },
 ];
@@ -125,6 +128,8 @@ export default function DashboardPage() {
         return <HomeSection />;
       case 'tts':
         return <TextToSpeechSection />;
+      case 'transcription':
+        return <TranscriptionSection />;
       case 'credits':
         return <CreditsSection />;
       case 'settings':
