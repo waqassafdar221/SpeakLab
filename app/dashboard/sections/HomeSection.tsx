@@ -26,6 +26,10 @@ import {
   Slider,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SpeedIcon from '@mui/icons-material/Speed';
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ttsApi, userApi, PublicVoice, VoiceMetadata, buildProxyUrl } from '@/lib/api';
 
 type VoiceEntry = {
@@ -407,50 +411,99 @@ export default function HomeSection() {
                 variant="outlined"
                 sx={{
                   mb: 2,
-                  p: 2,
+                  p: 1.5,
                   borderRadius: '12px',
-                  backgroundColor: '#f8f7f3',
-                  borderColor: 'rgba(0,0,0,0.08)',
+                  backgroundColor: '#fcfcfa',
+                  borderColor: 'rgba(0,0,0,0.07)',
                 }}
               >
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#1a1a1a' }}>
-                  Voice Controls
-                </Typography>
-                <Stack spacing={1.5}>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
-                      Speed: {speed.toFixed(2)}x
-                    </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
+                    Voice controls
+                  </Typography>
+                  <Button
+                    size="small"
+                    startIcon={<RestartAltIcon fontSize="small" />}
+                    onClick={() => {
+                      setSpeed(1);
+                      setPitch(0);
+                      setVolume(1);
+                    }}
+                    sx={{
+                      textTransform: 'none',
+                      minWidth: 'auto',
+                      px: 1,
+                      color: '#666',
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </Box>
+                <Stack spacing={1.25}>
+                  <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <SpeedIcon sx={{ fontSize: 16, color: '#555' }} />
+                        <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                          Speed
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
+                        {speed.toFixed(2)}x
+                      </Typography>
+                    </Box>
                     <Slider
+                      size="small"
                       value={speed}
                       min={0.5}
                       max={2}
                       step={0.05}
                       onChange={(_, value) => setSpeed(value as number)}
+                      sx={{ color: '#1a1a1a', py: 0.5 }}
                     />
                   </Box>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
-                      Pitch: {pitch > 0 ? `+${pitch}` : pitch} Hz
-                    </Typography>
+                  <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <GraphicEqIcon sx={{ fontSize: 16, color: '#555' }} />
+                        <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                          Pitch
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
+                        {pitch > 0 ? `+${pitch}` : pitch} Hz
+                      </Typography>
+                    </Box>
                     <Slider
+                      size="small"
                       value={pitch}
                       min={-50}
                       max={50}
                       step={1}
                       onChange={(_, value) => setPitch(value as number)}
+                      sx={{ color: '#1a1a1a', py: 0.5 }}
                     />
                   </Box>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
-                      Volume: {Math.round(volume * 100)}%
-                    </Typography>
+                  <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <VolumeUpIcon sx={{ fontSize: 16, color: '#555' }} />
+                        <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                          Volume
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
+                        {Math.round(volume * 100)}%
+                      </Typography>
+                    </Box>
                     <Slider
+                      size="small"
                       value={volume}
                       min={0}
                       max={2}
                       step={0.05}
                       onChange={(_, value) => setVolume(value as number)}
+                      sx={{ color: '#1a1a1a', py: 0.5 }}
                     />
                   </Box>
                 </Stack>
