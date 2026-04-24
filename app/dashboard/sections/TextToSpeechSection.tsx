@@ -24,12 +24,16 @@ import {
   InputLabel,
   Stack,
   Slider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SpeedIcon from '@mui/icons-material/Speed';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ttsApi, userApi, PublicVoice, VoiceMetadata, buildProxyUrl } from '@/lib/api';
 
 // Language to flag emoji mapping
@@ -410,107 +414,122 @@ export default function TextToSpeechSection() {
               }}
             />
 
-            <Card
-              variant="outlined"
+            <Accordion
+              disableGutters
               sx={{
                 mb: 2,
-                p: 1.5,
                 borderRadius: '12px',
+                overflow: 'hidden',
                 backgroundColor: '#fcfcfa',
-                borderColor: 'rgba(0,0,0,0.07)',
+                border: '1px solid rgba(0,0,0,0.07)',
+                boxShadow: 'none',
+                '&:before': { display: 'none' },
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon sx={{ color: '#666' }} />}
+                sx={{
+                  minHeight: 44,
+                  px: 1.5,
+                  '& .MuiAccordionSummary-content': {
+                    my: 0.5,
+                  },
+                }}
+              >
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
-                  Voice controls
+                  Advanced settings
                 </Typography>
-                <Button
-                  size="small"
-                  startIcon={<RestartAltIcon fontSize="small" />}
-                  onClick={() => {
-                    setSpeed(1);
-                    setPitch(0);
-                    setVolume(1);
-                  }}
-                  sx={{
-                    textTransform: 'none',
-                    minWidth: 'auto',
-                    px: 1,
-                    color: '#666',
-                  }}
-                >
-                  Reset
-                </Button>
-              </Box>
-              <Stack spacing={1.25}>
-                <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <SpeedIcon sx={{ fontSize: 16, color: '#555' }} />
-                      <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
-                        Speed
+              </AccordionSummary>
+              <AccordionDetails sx={{ px: 1.5, pb: 1.5, pt: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mb: 1 }}>
+                  <Button
+                    size="small"
+                    startIcon={<RestartAltIcon fontSize="small" />}
+                    onClick={() => {
+                      setSpeed(1);
+                      setPitch(0);
+                      setVolume(1);
+                    }}
+                    sx={{
+                      textTransform: 'none',
+                      minWidth: 'auto',
+                      px: 1,
+                      color: '#666',
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </Box>
+                <Stack spacing={1.25}>
+                  <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <SpeedIcon sx={{ fontSize: 16, color: '#555' }} />
+                        <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                          Speed
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
+                        {speed.toFixed(2)}x
                       </Typography>
                     </Box>
-                    <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
-                      {speed.toFixed(2)}x
-                    </Typography>
+                    <Slider
+                      size="small"
+                      value={speed}
+                      min={0.5}
+                      max={2}
+                      step={0.05}
+                      onChange={(_, value) => setSpeed(value as number)}
+                      sx={{ color: '#1a1a1a', py: 0.5 }}
+                    />
                   </Box>
-                  <Slider
-                    size="small"
-                    value={speed}
-                    min={0.5}
-                    max={2}
-                    step={0.05}
-                    onChange={(_, value) => setSpeed(value as number)}
-                    sx={{ color: '#1a1a1a', py: 0.5 }}
-                  />
-                </Box>
-                <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <GraphicEqIcon sx={{ fontSize: 16, color: '#555' }} />
-                      <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
-                        Pitch
+                  <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <GraphicEqIcon sx={{ fontSize: 16, color: '#555' }} />
+                        <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                          Pitch
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
+                        {pitch > 0 ? `+${pitch}` : pitch} Hz
                       </Typography>
                     </Box>
-                    <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
-                      {pitch > 0 ? `+${pitch}` : pitch} Hz
-                    </Typography>
+                    <Slider
+                      size="small"
+                      value={pitch}
+                      min={-50}
+                      max={50}
+                      step={1}
+                      onChange={(_, value) => setPitch(value as number)}
+                      sx={{ color: '#1a1a1a', py: 0.5 }}
+                    />
                   </Box>
-                  <Slider
-                    size="small"
-                    value={pitch}
-                    min={-50}
-                    max={50}
-                    step={1}
-                    onChange={(_, value) => setPitch(value as number)}
-                    sx={{ color: '#1a1a1a', py: 0.5 }}
-                  />
-                </Box>
-                <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <VolumeUpIcon sx={{ fontSize: 16, color: '#555' }} />
-                      <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
-                        Volume
+                  <Box sx={{ borderRadius: '10px', p: 1, backgroundColor: '#f6f5f1' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <VolumeUpIcon sx={{ fontSize: 16, color: '#555' }} />
+                        <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                          Volume
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
+                        {Math.round(volume * 100)}%
                       </Typography>
                     </Box>
-                    <Typography variant="caption" sx={{ color: '#1a1a1a', fontWeight: 700 }}>
-                      {Math.round(volume * 100)}%
-                    </Typography>
+                    <Slider
+                      size="small"
+                      value={volume}
+                      min={0}
+                      max={2}
+                      step={0.05}
+                      onChange={(_, value) => setVolume(value as number)}
+                      sx={{ color: '#1a1a1a', py: 0.5 }}
+                    />
                   </Box>
-                  <Slider
-                    size="small"
-                    value={volume}
-                    min={0}
-                    max={2}
-                    step={0.05}
-                    onChange={(_, value) => setVolume(value as number)}
-                    sx={{ color: '#1a1a1a', py: 0.5 }}
-                  />
-                </Box>
-              </Stack>
-            </Card>
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
 
             {error && (
               <Alert severity="error" sx={{ mb: 2, borderRadius: '8px' }}>
