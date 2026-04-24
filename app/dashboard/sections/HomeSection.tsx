@@ -23,6 +23,7 @@ import {
   FormControl,
   InputLabel,
   Tooltip,
+  Slider,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { ttsApi, userApi, PublicVoice, VoiceMetadata, buildProxyUrl } from '@/lib/api';
@@ -113,6 +114,9 @@ export default function HomeSection() {
   const [voiceSearch, setVoiceSearch] = useState('');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [costDeducted, setCostDeducted] = useState(0);
+  const [speed, setSpeed] = useState(1);
+  const [pitch, setPitch] = useState(0);
+  const [volume, setVolume] = useState(1);
   const [previewLoadingVoice, setPreviewLoadingVoice] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -194,6 +198,9 @@ export default function HomeSection() {
       const response = await ttsApi.generateSpeech({
         text: textInput,
         public_voice: selectedPublicVoice,
+        speed,
+        pitch,
+        volume,
       });
 
       setCostDeducted(response.deducted);
@@ -243,6 +250,9 @@ export default function HomeSection() {
         body: JSON.stringify({
           text: previewText,
           public_voice: voiceKey,
+          speed,
+          pitch,
+          volume,
         }),
       });
 
@@ -392,6 +402,59 @@ export default function HomeSection() {
                   },
                 }}
               />
+
+              <Card
+                variant="outlined"
+                sx={{
+                  mb: 2,
+                  p: 2,
+                  borderRadius: '12px',
+                  backgroundColor: '#f8f7f3',
+                  borderColor: 'rgba(0,0,0,0.08)',
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#1a1a1a' }}>
+                  Voice Controls
+                </Typography>
+                <Stack spacing={1.5}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                      Speed: {speed.toFixed(2)}x
+                    </Typography>
+                    <Slider
+                      value={speed}
+                      min={0.5}
+                      max={2}
+                      step={0.05}
+                      onChange={(_, value) => setSpeed(value as number)}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                      Pitch: {pitch > 0 ? `+${pitch}` : pitch} Hz
+                    </Typography>
+                    <Slider
+                      value={pitch}
+                      min={-50}
+                      max={50}
+                      step={1}
+                      onChange={(_, value) => setPitch(value as number)}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#4a4a4a', fontWeight: 600 }}>
+                      Volume: {Math.round(volume * 100)}%
+                    </Typography>
+                    <Slider
+                      value={volume}
+                      min={0}
+                      max={2}
+                      step={0.05}
+                      onChange={(_, value) => setVolume(value as number)}
+                    />
+                  </Box>
+                </Stack>
+              </Card>
 
               {/* Character Counter */}
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>

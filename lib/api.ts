@@ -122,6 +122,9 @@ export interface PublicVoice {
 export interface TTSRequest {
   text: string;
   public_voice?: string;
+  speed?: number;
+  pitch?: number;
+  volume?: number;
 }
 
 export interface TTSResponse {
