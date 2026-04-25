@@ -23,6 +23,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import BoltIcon from '@mui/icons-material/Bolt';
+import DownloadIcon from '@mui/icons-material/Download';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import { ttsApi, userApi, PublicVoice, VoiceMetadata, buildProxyUrl } from '@/lib/api';
 
@@ -87,6 +88,7 @@ function AudioPlayer({ src, creditsUsed }: { src: string; creditsUsed: number })
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [downloading, setDownloading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -104,6 +106,26 @@ function AudioPlayer({ src, creditsUsed }: { src: string; creditsUsed: number })
     if (!a) return;
     if (playing) { a.pause(); setPlaying(false); }
     else { a.play(); setPlaying(true); }
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `speakstudio_${Date.now()}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently fail
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
@@ -158,6 +180,29 @@ function AudioPlayer({ src, creditsUsed }: { src: string; creditsUsed: number })
           {creditsUsed} cr
         </Typography>
       </Box>
+
+      <Tooltip title="Download audio">
+        <span>
+          <IconButton
+            size="small"
+            onClick={handleDownload}
+            disabled={downloading}
+            sx={{
+              width: 34,
+              height: 34,
+              backgroundColor: 'rgba(255,255,255,0.12)',
+              color: '#fff',
+              flexShrink: 0,
+              '&:hover': { backgroundColor: 'rgba(255,255,255,0.22)' },
+              '&:disabled': { opacity: 0.4 },
+            }}
+          >
+            {downloading
+              ? <CircularProgress size={14} sx={{ color: '#fff' }} />
+              : <DownloadIcon sx={{ fontSize: 16 }} />}
+          </IconButton>
+        </span>
+      </Tooltip>
     </Box>
   );
 }
