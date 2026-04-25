@@ -192,6 +192,18 @@ export interface AdminUser {
 export interface AdminStats {
   total_users: number;
   total_credits_allocated: number;
+  expired_users: number;
+}
+
+export interface UsersGrowthPoint {
+  date: string;
+  count: number;
+}
+
+export interface JobsUsagePoint {
+  date: string;
+  jobs: number;
+  credits: number;
 }
 
 export interface CreateUserRequest {
@@ -233,6 +245,14 @@ export const adminApi = {
 
   listPackages: async (): Promise<Package[]> => {
     return apiFetch<Package[]>('/admin/packages');
+  },
+
+  getUsersGrowth: async (): Promise<UsersGrowthPoint[]> => {
+    return apiFetch<UsersGrowthPoint[]>('/admin/analytics/users-growth');
+  },
+
+  getJobsUsage: async (): Promise<JobsUsagePoint[]> => {
+    return apiFetch<JobsUsagePoint[]>('/admin/analytics/jobs-usage');
   },
 };
 
