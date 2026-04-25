@@ -143,109 +143,100 @@ export default function DashboardPage() {
     <Box
       sx={{
         height: '100%',
-        background: 'linear-gradient(180deg, #ebe9e0 0%, #e5e3d8 100%)',
+        backgroundColor: '#ffffff',
+        borderRight: '1px solid rgba(26,26,26,0.07)',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* Brand Header */}
-      <Box
-        sx={{
-          p: 3,
-          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-        }}
-      >
-        <Avatar
+      {/* Brand */}
+      <Box sx={{ px: 2.5, py: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
           sx={{
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
+            borderRadius: '9px',
             background: 'linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)',
-            fontSize: '1rem',
-            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
+            fontSize: '0.85rem',
+            fontWeight: 800,
+            flexShrink: 0,
           }}
         >
           S
-        </Avatar>
+        </Box>
         <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em',
-          }}
+          variant="subtitle1"
+          sx={{ fontWeight: 800, color: '#1a1a1a', letterSpacing: '-0.02em', lineHeight: 1 }}
         >
           SpeakStudio
         </Typography>
       </Box>
 
-      {/* Navigation List */}
-      <List sx={{ pt: 2, px: 1.5, flexGrow: 1 }}>
-        {navItems.map((item) => (
-          <ListItemButton
-            key={item.id}
-            selected={selectedSection === item.id}
-            onClick={() => handleNavClick(item.id)}
-            sx={{
-              borderRadius: '8px',
-              mb: 0.5,
-              transition: 'all 0.2s ease',
-              '&.Mui-selected': {
-                backgroundColor: 'rgba(26, 26, 26, 0.08)',
-                borderLeft: '3px solid #1a1a1a',
-                fontWeight: 600,
-                '&:hover': {
-                  backgroundColor: 'rgba(26, 26, 26, 0.12)',
-                },
-              },
-              '&:hover': {
-                backgroundColor: 'rgba(26, 26, 26, 0.04)',
-              },
-            }}
-          >
-            <ListItemIcon
+      <Box sx={{ mx: 2, borderBottom: '1px solid rgba(26,26,26,0.07)', mb: 1.5 }} />
+
+      {/* Navigation */}
+      <List sx={{ px: 1.5, flexGrow: 1, pt: 0 }}>
+        {navItems.map((item) => {
+          const active = selectedSection === item.id;
+          return (
+            <ListItemButton
+              key={item.id}
+              selected={active}
+              onClick={() => handleNavClick(item.id)}
               sx={{
-                color: selectedSection === item.id ? '#1a1a1a' : '#4a4a4a',
-                minWidth: 40,
+                borderRadius: '10px',
+                mb: 0.5,
+                px: 1.5,
+                py: 1,
+                transition: 'all 0.15s ease',
+                backgroundColor: active ? '#1a1a1a' : 'transparent',
+                '&.Mui-selected': {
+                  backgroundColor: '#1a1a1a',
+                  '&:hover': { backgroundColor: '#2a2a2a' },
+                },
+                '&:hover': {
+                  backgroundColor: active ? '#2a2a2a' : 'rgba(26,26,26,0.05)',
+                },
               }}
             >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.label}
-              primaryTypographyProps={{
-                fontSize: '0.95rem',
-                fontWeight: selectedSection === item.id ? 600 : 500,
-                color: selectedSection === item.id ? '#1a1a1a' : '#4a4a4a',
-              }}
-            />
-          </ListItemButton>
-        ))}
+              <ListItemIcon sx={{ color: active ? '#fff' : '#6a6a6a', minWidth: 36 }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{
+                  fontSize: '0.875rem',
+                  fontWeight: active ? 600 : 500,
+                  color: active ? '#fff' : '#4a4a4a',
+                }}
+              />
+            </ListItemButton>
+          );
+        })}
       </List>
 
-      {/* Admin Panel Button (only for admins) */}
+      {/* Admin button */}
       {isAdmin && (
-        <Box sx={{ px: 1.5, pb: 2 }}>
+        <Box sx={{ px: 1.5, pb: 1.5 }}>
           <Button
             fullWidth
-            variant="contained"
-            startIcon={<AdminPanelSettingsIcon />}
+            startIcon={<AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} />}
             onClick={() => router.push('/admin')}
             sx={{
-              backgroundColor: '#1a1a1a',
-              color: '#fff',
-              borderRadius: '8px',
+              backgroundColor: 'rgba(26,26,26,0.06)',
+              color: '#1a1a1a',
+              borderRadius: '10px',
               textTransform: 'none',
               fontWeight: 600,
+              fontSize: '0.875rem',
               py: 1,
-              '&:hover': {
-                backgroundColor: '#2a2a2a',
-              },
+              justifyContent: 'flex-start',
+              px: 1.5,
+              '&:hover': { backgroundColor: 'rgba(26,26,26,0.1)' },
             }}
           >
             Admin Panel
@@ -253,61 +244,36 @@ export default function DashboardPage() {
         </Box>
       )}
 
-      {/* User Info at Bottom */}
-      <Box
-        sx={{
-          p: 2,
-          borderTop: '1px solid rgba(0, 0, 0, 0.08)',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+      {/* User footer */}
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(26,26,26,0.07)' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
           <Avatar
             sx={{
-              width: 32,
-              height: 32,
-              backgroundColor: '#1a1a1a',
+              width: 34,
+              height: 34,
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)',
               fontSize: '0.875rem',
+              fontWeight: 700,
+              flexShrink: 0,
             }}
           >
             {userName.charAt(0).toUpperCase()}
           </Avatar>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, color: '#1a1a1a', fontSize: '0.875rem' }}
-            >
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {userName}
             </Typography>
-            <Typography variant="caption" sx={{ color: '#6a6a6a' }}>
+            <Typography variant="caption" sx={{ color: '#9a9a9a', display: 'block' }}>
               {userRole}
+              {!isAdmin && expiryDate && (
+                <Box component="span" sx={{ color: new Date(expiryDate) < new Date() ? '#ef4444' : '#9a9a9a' }}>
+                  {' · '}Expires {expiryDate}
+                </Box>
+              )}
             </Typography>
           </Box>
         </Box>
-        
-        {/* Account Info - Only show for non-admin users */}
-        {!isAdmin && (
-          <Box sx={{ mb: 2, px: 1 }}>
-            {memberSince && (
-              <Typography variant="caption" sx={{ display: 'block', color: '#6a6a6a', mb: 0.5 }}>
-                Member since {memberSince}
-              </Typography>
-            )}
-            {expiryDate && (
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  display: 'block', 
-                  color: new Date(expiryDate) < new Date() ? '#d32f2f' : '#6a6a6a',
-                  fontWeight: new Date(expiryDate) < new Date() ? 600 : 400
-                }}
-              >
-                Expires: {expiryDate}
-              </Typography>
-            )}
-          </Box>
-        )}
-        
-        {/* Back to Home Link */}
+
         <Box
           component="a"
           href="/"
@@ -315,21 +281,16 @@ export default function DashboardPage() {
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            p: 1.5,
+            py: 0.75,
+            px: 1,
             borderRadius: '8px',
             textDecoration: 'none',
-            backgroundColor: 'rgba(26, 26, 26, 0.04)',
-            transition: 'all 0.2s ease',
-            '&:hover': {
-              backgroundColor: 'rgba(26, 26, 26, 0.08)',
-            },
+            transition: 'background 0.15s',
+            '&:hover': { backgroundColor: 'rgba(26,26,26,0.05)' },
           }}
         >
-          <ArrowBackIcon sx={{ fontSize: '1rem', color: '#4a4a4a' }} />
-          <Typography
-            variant="body2"
-            sx={{ color: '#4a4a4a', fontWeight: 500, fontSize: '0.875rem' }}
-          >
+          <ArrowBackIcon sx={{ fontSize: '0.9rem', color: '#9a9a9a' }} />
+          <Typography variant="caption" sx={{ color: '#9a9a9a', fontWeight: 500 }}>
             Back to Home
           </Typography>
         </Box>
@@ -417,6 +378,7 @@ export default function DashboardPage() {
           minHeight: '100vh',
           p: { xs: 2, sm: 3, md: 4 },
           pt: { xs: 10, md: 4 },
+          maxWidth: '100%',
         }}
       >
         <AnimatePresence mode="wait">

@@ -193,7 +193,7 @@ export default function TranscriptionSection() {
           Audio to Text
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          Transcribe any audio file or recording — powered by Groq Whisper
+          Transcribe any audio file or recording — powered by SpeakStudio
         </Typography>
       </Box>
 
@@ -412,7 +412,7 @@ export default function TranscriptionSection() {
             )}
             {status === 'idle' && (
               <Typography variant="caption" sx={{ color: 'rgba(26,26,26,0.35)' }}>
-                Supports 98+ languages · Powered by Groq Whisper · No file size limits
+                Supports 98+ languages · Powered by SpeakStudio · No file size limits
               </Typography>
             )}
           </Box>

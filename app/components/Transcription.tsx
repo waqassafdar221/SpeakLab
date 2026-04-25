@@ -249,7 +249,7 @@ export default function Transcription() {
               </Box>
             </Typography>
             <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: 'rgba(255,255,255,0.6)', maxWidth: '600px', mx: 'auto' }}>
-              Upload or record audio to instantly transcribe it — powered by Groq Whisper
+              Upload or record audio to instantly transcribe it — powered by SpeakStudio
             </Typography>
           </Box>
         </motion.div>
@@ -491,7 +491,7 @@ export default function Transcription() {
                   )}
                   {status === 'idle' && (
                     <Typography variant="caption" sx={{ color: 'rgba(26,26,26,0.35)' }}>
-                      98+ languages · Powered by Groq Whisper
+                      98+ languages · Powered by SpeakStudio
                     </Typography>
                   )}
                 </Box>

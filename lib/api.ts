@@ -163,6 +163,13 @@ export const userApi = {
   getMe: async (): Promise<UserInfo> => {
     return apiFetch<UserInfo>('/users/me');
   },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+    return apiFetch<{ message: string }>('/users/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    });
+  },
 };
 
 // Admin API Types
