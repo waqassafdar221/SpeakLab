@@ -150,6 +150,7 @@ export default function UsersManagementSection() {
                 <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Credits</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Vendor</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
               </TableRow>
@@ -184,6 +185,13 @@ export default function UsersManagementSection() {
                       size="small"
                       color={user.role === 'admin' ? 'error' : user.role === 'vendor' ? 'info' : 'default'}
                     />
+                  </TableCell>
+                  <TableCell>
+                    {user.invite_pending ? (
+                      <Chip label="Pending" size="small" color="warning" variant="outlined" />
+                    ) : (
+                      <Chip label="Active" size="small" color="success" variant="outlined" />
+                    )}
                   </TableCell>
                   <TableCell sx={{ color: '#6a6a6a' }}>
                     {user.vendor_username ?? '—'}

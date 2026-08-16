@@ -21,7 +21,6 @@ export default function CreateUserSection() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
     role: 'customer' as 'customer' | 'vendor',
     package_id: 0,
     initial_credits: 0,
@@ -72,12 +71,6 @@ export default function CreateUserSection() {
       newErrors.email = 'Email is invalid';
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
     if (formData.initial_credits < 0) {
       newErrors.initial_credits = 'Credits cannot be negative';
     }
@@ -96,22 +89,25 @@ export default function CreateUserSection() {
 
     setIsLoading(true);
     try {
-      await adminApi.createUser({
+      const result = await adminApi.createUser({
         username: formData.username,
         email: formData.email,
-        password: formData.password,
         role: formData.role,
         package_id: formData.role === 'vendor' ? undefined : formData.package_id || undefined,
         initial_credits: formData.role === 'vendor' ? 0 : formData.initial_credits,
       });
 
-      setSuccessMessage(formData.role === 'vendor' ? 'Vendor created successfully!' : 'Customer created successfully!');
+      const who = formData.role === 'vendor' ? 'Vendor' : 'Customer';
+      setSuccessMessage(
+        result.email_sent
+          ? `${who} created — an invite email was sent to ${formData.email}.`
+          : `${who} created, but the invite email failed to send. Check the SMTP settings.`
+      );
       setShowSuccess(true);
       // Reset form
       setFormData({
         username: '',
         email: '',
-        password: '',
         role: 'customer',
         package_id: 0,
         initial_credits: 0,
@@ -148,7 +144,7 @@ export default function CreateUserSection() {
           Create New User
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          Add a vendor or a customer account to the system
+          Add a vendor or a customer account — they'll get an email to set their own password
         </Typography>
       </Box>
 
@@ -211,19 +207,6 @@ export default function CreateUserSection() {
             onChange={handleChange}
             error={!!errors.email}
             helperText={errors.email}
-            sx={{ mb: 2 }}
-          />
-
-          {/* Password */}
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            error={!!errors.password}
-            helperText={errors.password}
             sx={{ mb: 2 }}
           />
 

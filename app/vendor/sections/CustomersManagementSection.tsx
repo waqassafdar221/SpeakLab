@@ -149,6 +149,7 @@ export default function CustomersManagementSection() {
                 <TableCell sx={{ fontWeight: 700 }}>Username</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Credits</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Expires</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
               </TableRow>
@@ -156,7 +157,7 @@ export default function CustomersManagementSection() {
             <TableBody>
               {customers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
+                  <TableCell colSpan={7} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
                     No customers yet — create one from "Create Customer".
                   </TableCell>
                 </TableRow>
@@ -183,6 +184,13 @@ export default function CustomersManagementSection() {
                         fontWeight: 600,
                       }}
                     />
+                  </TableCell>
+                  <TableCell>
+                    {customer.invite_pending ? (
+                      <Chip label="Pending" size="small" color="warning" variant="outlined" />
+                    ) : (
+                      <Chip label="Active" size="small" color="success" variant="outlined" />
+                    )}
                   </TableCell>
                   <TableCell sx={{ color: '#6a6a6a' }}>
                     {customer.expiry_date ? new Date(customer.expiry_date).toLocaleDateString() : '—'}

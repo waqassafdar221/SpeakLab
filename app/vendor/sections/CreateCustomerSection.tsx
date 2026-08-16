@@ -21,7 +21,6 @@ export default function CreateCustomerSection() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
     package_id: 0,
     initial_credits: 0,
   });
@@ -30,6 +29,7 @@ export default function CreateCustomerSection() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('Customer created successfully!');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -70,12 +70,6 @@ export default function CreateCustomerSection() {
       newErrors.email = 'Email is invalid';
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
     if (formData.initial_credits < 0) {
       newErrors.initial_credits = 'Credits cannot be negative';
     }
@@ -94,20 +88,23 @@ export default function CreateCustomerSection() {
 
     setIsLoading(true);
     try {
-      await vendorApi.createCustomer({
+      const result = await vendorApi.createCustomer({
         username: formData.username,
         email: formData.email,
-        password: formData.password,
         package_id: formData.package_id || undefined,
         initial_credits: formData.initial_credits,
       });
 
+      setSuccessMessage(
+        result.email_sent
+          ? `Customer created — an invite email was sent to ${formData.email}.`
+          : 'Customer created, but the invite email failed to send.'
+      );
       setShowSuccess(true);
       // Reset form
       setFormData({
         username: '',
         email: '',
-        password: '',
         package_id: 0,
         initial_credits: 0,
       });
@@ -143,7 +140,7 @@ export default function CreateCustomerSection() {
           Create New Customer
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          Give a customer their own login and credits
+          Give a customer their own login — they'll get an email to set their password
         </Typography>
       </Box>
 
@@ -187,19 +184,6 @@ export default function CreateCustomerSection() {
             onChange={handleChange}
             error={!!errors.email}
             helperText={errors.email}
-            sx={{ mb: 2 }}
-          />
-
-          {/* Password */}
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            error={!!errors.password}
-            helperText={errors.password}
             sx={{ mb: 2 }}
           />
 
@@ -280,7 +264,7 @@ export default function CreateCustomerSection() {
           severity="success"
           sx={{ borderRadius: '12px' }}
         >
-          Customer created successfully!
+          {successMessage}
         </Alert>
       </Snackbar>
     </Box>

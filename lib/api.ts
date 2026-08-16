@@ -84,12 +84,28 @@ async function apiFetch<T>(
   return response.json();
 }
 
+export interface InviteInfo {
+  username: string;
+  email: string;
+}
+
 // Auth API functions
 export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     return apiFetch<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
+    });
+  },
+
+  getInvite: async (token: string): Promise<InviteInfo> => {
+    return apiFetch<InviteInfo>(`/auth/invite/${encodeURIComponent(token)}`);
+  },
+
+  setPassword: async (token: string, password: string): Promise<LoginResponse> => {
+    return apiFetch<LoginResponse>('/auth/set-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
     });
   },
 
@@ -193,6 +209,7 @@ export interface AdminUser {
   vendor_id?: number | null;
   vendor_username?: string | null;
   package_id: number | null;
+  invite_pending: boolean;
   created_at: string | null;
   expiry_date: string | null;
 }
@@ -225,7 +242,6 @@ export interface JobsUsagePoint {
 export interface CreateUserRequest {
   username: string;
   email: string;
-  password: string;
   role?: 'vendor' | 'customer';
   package_id?: number;
   initial_credits: number;
@@ -234,7 +250,6 @@ export interface CreateUserRequest {
 export interface CreateCustomerRequest {
   username: string;
   email: string;
-  password: string;
   package_id?: number;
   initial_credits: number;
 }
@@ -249,8 +264,8 @@ export const adminApi = {
     return apiFetch<AdminUser[]>('/admin/users');
   },
 
-  createUser: async (request: CreateUserRequest): Promise<{ id: number; username: string }> => {
-    return apiFetch<{ id: number; username: string }>('/admin/users', {
+  createUser: async (request: CreateUserRequest): Promise<{ id: number; username: string; email_sent: boolean }> => {
+    return apiFetch<{ id: number; username: string; email_sent: boolean }>('/admin/users', {
       method: 'POST',
       body: JSON.stringify(request),
     });
@@ -299,8 +314,8 @@ export const vendorApi = {
     return apiFetch<AdminUser[]>('/vendor/customers');
   },
 
-  createCustomer: async (request: CreateCustomerRequest): Promise<{ id: number; username: string }> => {
-    return apiFetch<{ id: number; username: string }>('/vendor/customers', {
+  createCustomer: async (request: CreateCustomerRequest): Promise<{ id: number; username: string; email_sent: boolean }> => {
+    return apiFetch<{ id: number; username: string; email_sent: boolean }>('/vendor/customers', {
       method: 'POST',
       body: JSON.stringify(request),
     });
