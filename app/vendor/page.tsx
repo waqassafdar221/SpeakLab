@@ -9,7 +9,6 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  Avatar,
   IconButton,
   useMediaQuery,
   useTheme,
@@ -18,40 +17,37 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { TokenManager, userApi, authApi } from '@/lib/api';
 
-// Import admin sections
-import AdminDashboardSection from './sections/AdminDashboardSection';
-import UsersManagementSection from './sections/UsersManagementSection';
-import CreateUserSection from './sections/CreateUserSection';
-import VendorsManagementSection from './sections/VendorsManagementSection';
+// Import vendor sections
+import VendorDashboardSection from './sections/VendorDashboardSection';
+import CustomersManagementSection from './sections/CustomersManagementSection';
+import CreateCustomerSection from './sections/CreateCustomerSection';
 
 const drawerWidth = 240;
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-  { id: 'users', label: 'Manage Users', icon: <PeopleIcon /> },
-  { id: 'create-user', label: 'Create User', icon: <PersonAddIcon /> },
-  { id: 'vendors', label: 'Vendors', icon: <StorefrontIcon /> },
+  { id: 'customers', label: 'Manage Customers', icon: <PeopleIcon /> },
+  { id: 'create-customer', label: 'Create Customer', icon: <PersonAddIcon /> },
 ];
 
-export default function AdminPage() {
+export default function VendorPage() {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState('dashboard');
   const [isChecking, setIsChecking] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isVendor, setIsVendor] = useState(false);
 
-  // Check authentication and admin status on mount
+  // Check authentication and vendor status on mount
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkVendor = async () => {
       const token = TokenManager.get();
       if (!token) {
         router.push('/login');
@@ -60,19 +56,19 @@ export default function AdminPage() {
 
       try {
         const userData = await userApi.getMe();
-        if (userData.role !== 'admin') {
-          router.push(userData.role === 'vendor' ? '/vendor' : '/dashboard');
+        if (userData.role !== 'vendor') {
+          router.push(userData.role === 'admin' ? '/admin' : '/dashboard');
         } else {
-          setIsAdmin(true);
+          setIsVendor(true);
           setIsChecking(false);
         }
       } catch (error) {
-        console.error('Failed to verify admin:', error);
+        console.error('Failed to verify vendor:', error);
         router.push('/login');
       }
     };
 
-    checkAdmin();
+    checkVendor();
   }, [router]);
 
   const handleDrawerToggle = () => {
@@ -94,15 +90,13 @@ export default function AdminPage() {
   const renderSection = () => {
     switch (selectedSection) {
       case 'dashboard':
-        return <AdminDashboardSection />;
-      case 'users':
-        return <UsersManagementSection />;
-      case 'create-user':
-        return <CreateUserSection />;
-      case 'vendors':
-        return <VendorsManagementSection />;
+        return <VendorDashboardSection />;
+      case 'customers':
+        return <CustomersManagementSection />;
+      case 'create-customer':
+        return <CreateCustomerSection />;
       default:
-        return <AdminDashboardSection />;
+        return <VendorDashboardSection />;
     }
   };
 
@@ -139,7 +133,7 @@ export default function AdminPage() {
           SpeakStudio
         </Typography>
         <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          Admin Panel
+          Vendor Panel
         </Typography>
       </Box>
 

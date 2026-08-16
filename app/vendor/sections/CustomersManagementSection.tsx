@@ -25,75 +25,75 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { adminApi, AdminUser } from '@/lib/api';
+import { vendorApi, AdminUser } from '@/lib/api';
 
-export default function UsersManagementSection() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
+export default function CustomersManagementSection() {
+  const [customers, setCustomers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<AdminUser | null>(null);
   const [newCredits, setNewCredits] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const fetchUsers = async () => {
+  const fetchCustomers = async () => {
     setIsLoading(true);
     try {
-      const data = await adminApi.listUsers();
-      setUsers(data);
+      const data = await vendorApi.listCustomers();
+      setCustomers(data);
       setError('');
     } catch (err) {
-      console.error('Failed to fetch users:', err);
-      setError('Failed to load users');
+      console.error('Failed to fetch customers:', err);
+      setError('Failed to load customers');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchCustomers();
   }, []);
 
-  const handleEditClick = (user: AdminUser) => {
-    setSelectedUser(user);
-    setNewCredits(user.credits);
+  const handleEditClick = (customer: AdminUser) => {
+    setSelectedCustomer(customer);
+    setNewCredits(customer.credits);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteClick = (user: AdminUser) => {
-    setSelectedUser(user);
+  const handleDeleteClick = (customer: AdminUser) => {
+    setSelectedCustomer(customer);
     setDeleteDialogOpen(true);
   };
 
   const handleUpdateCredits = async () => {
-    if (!selectedUser) return;
+    if (!selectedCustomer) return;
 
     try {
-      await adminApi.updateUserCredits(selectedUser.id, newCredits);
+      await vendorApi.updateCustomerCredits(selectedCustomer.id, newCredits);
       setSuccessMessage('Credits updated successfully');
       setShowSuccess(true);
       setEditDialogOpen(false);
-      fetchUsers();
+      fetchCustomers();
     } catch (err) {
       console.error('Failed to update credits:', err);
       setError('Failed to update credits');
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
+  const handleDeleteCustomer = async () => {
+    if (!selectedCustomer) return;
 
     try {
-      await adminApi.deleteUser(selectedUser.id);
-      setSuccessMessage('User deleted successfully');
+      await vendorApi.deleteCustomer(selectedCustomer.id);
+      setSuccessMessage('Customer deleted successfully');
       setShowSuccess(true);
       setDeleteDialogOpen(false);
-      fetchUsers();
+      fetchCustomers();
     } catch (err) {
-      console.error('Failed to delete user:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete user');
+      console.error('Failed to delete customer:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete customer');
     }
   };
 
@@ -118,10 +118,10 @@ export default function UsersManagementSection() {
             letterSpacing: '-0.02em',
           }}
         >
-          Manage Users
+          Manage Customers
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          View and manage all user accounts
+          View and manage the customer accounts you've created
         </Typography>
       </Box>
 
@@ -131,7 +131,7 @@ export default function UsersManagementSection() {
         </Alert>
       )}
 
-      {/* Users Table */}
+      {/* Customers Table */}
       <Card
         sx={{
           borderRadius: '16px',
@@ -149,27 +149,33 @@ export default function UsersManagementSection() {
                 <TableCell sx={{ fontWeight: 700 }}>Username</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Credits</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Vendor</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Expires</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
+              {customers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
+                    No customers yet — create one from "Create Customer".
+                  </TableCell>
+                </TableRow>
+              )}
+              {customers.map((customer) => (
                 <TableRow
-                  key={user.id}
+                  key={customer.id}
                   sx={{
                     '&:hover': {
                       backgroundColor: 'rgba(0, 0, 0, 0.02)',
                     },
                   }}
                 >
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{customer.id}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{customer.username}</TableCell>
+                  <TableCell>{customer.email}</TableCell>
                   <TableCell>
                     <Chip
-                      label={user.credits.toLocaleString()}
+                      label={customer.credits.toLocaleString()}
                       size="small"
                       sx={{
                         backgroundColor: '#1a1a1a',
@@ -178,28 +184,20 @@ export default function UsersManagementSection() {
                       }}
                     />
                   </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.role === 'admin' ? 'Admin' : user.role === 'vendor' ? 'Vendor' : 'Customer'}
-                      size="small"
-                      color={user.role === 'admin' ? 'error' : user.role === 'vendor' ? 'info' : 'default'}
-                    />
-                  </TableCell>
                   <TableCell sx={{ color: '#6a6a6a' }}>
-                    {user.vendor_username ?? '—'}
+                    {customer.expiry_date ? new Date(customer.expiry_date).toLocaleDateString() : '—'}
                   </TableCell>
                   <TableCell>
                     <IconButton
                       size="small"
-                      onClick={() => handleEditClick(user)}
+                      onClick={() => handleEditClick(customer)}
                       sx={{ mr: 1 }}
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => handleDeleteClick(user)}
-                      disabled={user.role === 'admin'}
+                      onClick={() => handleDeleteClick(customer)}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -216,7 +214,7 @@ export default function UsersManagementSection() {
         <DialogTitle>Update Credits</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Update credits for user: <strong>{selectedUser?.username}</strong>
+            Update credits for customer: <strong>{selectedCustomer?.username}</strong>
           </Typography>
           <TextField
             fullWidth
@@ -244,17 +242,17 @@ export default function UsersManagementSection() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete User</DialogTitle>
+        <DialogTitle>Delete Customer</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Are you sure you want to delete user: <strong>{selectedUser?.username}</strong>?
+            Are you sure you want to delete customer: <strong>{selectedCustomer?.username}</strong>?
             This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
           <Button
-            onClick={handleDeleteUser}
+            onClick={handleDeleteCustomer}
             variant="contained"
             color="error"
           >

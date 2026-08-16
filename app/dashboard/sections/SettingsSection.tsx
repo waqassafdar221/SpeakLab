@@ -146,7 +146,7 @@ export default function SettingsSection() {
       setUserData({
         username: data.username,
         email: data.email || '—',
-        role: data.is_admin ? 'Administrator' : 'User',
+        role: data.role === 'admin' ? 'Administrator' : 'Customer',
         createdAt: new Date(data.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
         credits: data.credits,
       });

@@ -134,12 +134,15 @@ export interface TTSResponse {
   deducted: number;
 }
 
+export type UserRole = 'admin' | 'vendor' | 'customer';
+
 export interface UserInfo {
   id: number;
   username: string;
   email: string;
   credits: number;
-  is_admin: boolean;
+  role: UserRole;
+  vendor_id: number | null;
   created_at: string;
   expiry_date: string | null;
 }
@@ -185,8 +188,21 @@ export interface AdminUser {
   username: string;
   email: string;
   credits: number;
-  is_admin: boolean;
+  // present on /admin/users rows; omitted from /vendor/customers rows (always role "customer" there)
+  role?: UserRole;
+  vendor_id?: number | null;
+  vendor_username?: string | null;
   package_id: number | null;
+  created_at: string | null;
+  expiry_date: string | null;
+}
+
+export interface VendorListItem {
+  id: number;
+  username: string;
+  email: string;
+  customer_count: number;
+  created_at: string;
 }
 
 export interface AdminStats {
@@ -207,6 +223,15 @@ export interface JobsUsagePoint {
 }
 
 export interface CreateUserRequest {
+  username: string;
+  email: string;
+  password: string;
+  role?: 'vendor' | 'customer';
+  package_id?: number;
+  initial_credits: number;
+}
+
+export interface CreateCustomerRequest {
   username: string;
   email: string;
   password: string;
@@ -253,6 +278,52 @@ export const adminApi = {
 
   getJobsUsage: async (): Promise<JobsUsagePoint[]> => {
     return apiFetch<JobsUsagePoint[]>('/admin/analytics/jobs-usage');
+  },
+
+  listVendors: async (): Promise<VendorListItem[]> => {
+    return apiFetch<VendorListItem[]>('/admin/vendors');
+  },
+};
+
+// Vendor API functions — same shape as adminApi, scoped to the vendor's own customers
+export const vendorApi = {
+  getStats: async (): Promise<AdminStats> => {
+    return apiFetch<AdminStats>('/vendor/stats');
+  },
+
+  listPackages: async (): Promise<Package[]> => {
+    return apiFetch<Package[]>('/vendor/packages');
+  },
+
+  listCustomers: async (): Promise<AdminUser[]> => {
+    return apiFetch<AdminUser[]>('/vendor/customers');
+  },
+
+  createCustomer: async (request: CreateCustomerRequest): Promise<{ id: number; username: string }> => {
+    return apiFetch<{ id: number; username: string }>('/vendor/customers', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  updateCustomerCredits: async (customerId: number, credits: number): Promise<AdminUser> => {
+    return apiFetch<AdminUser>(`/vendor/customers/${customerId}/credits?credits=${credits}`, {
+      method: 'PATCH',
+    });
+  },
+
+  deleteCustomer: async (customerId: number): Promise<{ message: string }> => {
+    return apiFetch<{ message: string }>(`/vendor/customers/${customerId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  getCustomersGrowth: async (): Promise<UsersGrowthPoint[]> => {
+    return apiFetch<UsersGrowthPoint[]>('/vendor/analytics/customers-growth');
+  },
+
+  getJobsUsage: async (): Promise<JobsUsagePoint[]> => {
+    return apiFetch<JobsUsagePoint[]>('/vendor/analytics/jobs-usage');
   },
 };
 

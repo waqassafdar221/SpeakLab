@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useRouter } from 'next/navigation';
-import { authApi, TokenManager } from '@/lib/api';
+import { authApi, TokenManager, userApi } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -97,10 +97,13 @@ export default function LoginPage() {
         // Show success message
         console.log('Login success:', response);
         setShowSuccess(true);
-        
-        // Redirect to dashboard after a short delay
+
+        // Vendors land on their own dashboard; everyone else keeps the customer dashboard
+        const me = await userApi.getMe();
+        const destination = me.role === 'vendor' ? '/vendor' : '/dashboard';
+
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push(destination);
         }, 1500);
       } catch (error) {
         // Handle login error

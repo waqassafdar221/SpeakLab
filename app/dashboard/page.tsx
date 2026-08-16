@@ -67,10 +67,17 @@ export default function DashboardPage() {
       } else {
         try {
           const userData = await userApi.getMe();
-          setIsAdmin(userData.is_admin);
+
+          // Vendors don't use the customer dashboard (no TTS/credits of their own)
+          if (userData.role === 'vendor') {
+            router.push('/vendor');
+            return;
+          }
+
+          setIsAdmin(userData.role === 'admin');
           setUserName(userData.username);
-          setUserRole(userData.is_admin ? 'Administrator' : 'User');
-          
+          setUserRole(userData.role === 'admin' ? 'Administrator' : 'Customer');
+
           // Format member since date
           if (userData.created_at) {
             const createdDate = new Date(userData.created_at);

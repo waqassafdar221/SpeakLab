@@ -15,14 +15,13 @@ import {
   MenuItem,
   Snackbar,
 } from '@mui/material';
-import { adminApi, Package } from '@/lib/api';
+import { vendorApi, Package } from '@/lib/api';
 
-export default function CreateUserSection() {
+export default function CreateCustomerSection() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    role: 'customer' as 'customer' | 'vendor',
     package_id: 0,
     initial_credits: 0,
   });
@@ -31,13 +30,12 @@ export default function CreateUserSection() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('User created successfully!');
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const data = await adminApi.listPackages();
+        const data = await vendorApi.listPackages();
         setPackages(data);
       } catch (err) {
         console.error('Failed to fetch packages:', err);
@@ -96,29 +94,26 @@ export default function CreateUserSection() {
 
     setIsLoading(true);
     try {
-      await adminApi.createUser({
+      await vendorApi.createCustomer({
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
-        package_id: formData.role === 'vendor' ? undefined : formData.package_id || undefined,
-        initial_credits: formData.role === 'vendor' ? 0 : formData.initial_credits,
+        package_id: formData.package_id || undefined,
+        initial_credits: formData.initial_credits,
       });
 
-      setSuccessMessage(formData.role === 'vendor' ? 'Vendor created successfully!' : 'Customer created successfully!');
       setShowSuccess(true);
       // Reset form
       setFormData({
         username: '',
         email: '',
         password: '',
-        role: 'customer',
         package_id: 0,
         initial_credits: 0,
       });
     } catch (err) {
-      console.error('Failed to create user:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create user');
+      console.error('Failed to create customer:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create customer');
     } finally {
       setIsLoading(false);
     }
@@ -145,14 +140,14 @@ export default function CreateUserSection() {
             letterSpacing: '-0.02em',
           }}
         >
-          Create New User
+          Create New Customer
         </Typography>
         <Typography variant="body1" sx={{ color: '#4a4a4a' }}>
-          Add a vendor or a customer account to the system
+          Give a customer their own login and credits
         </Typography>
       </Box>
 
-      {/* Create User Form */}
+      {/* Create Customer Form */}
       <Card
         sx={{
           p: 4,
@@ -170,25 +165,6 @@ export default function CreateUserSection() {
         )}
 
         <Box component="form" onSubmit={handleSubmit}>
-          {/* Role */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Role</InputLabel>
-            <Select
-              name="role"
-              value={formData.role}
-              label="Role"
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  role: e.target.value as 'customer' | 'vendor',
-                }))
-              }
-            >
-              <MenuItem value="customer">Customer</MenuItem>
-              <MenuItem value="vendor">Vendor — can create and manage their own customers</MenuItem>
-            </Select>
-          </FormControl>
-
           {/* Username */}
           <TextField
             fullWidth
@@ -227,45 +203,41 @@ export default function CreateUserSection() {
             sx={{ mb: 2 }}
           />
 
-          {formData.role === 'customer' && (
-            <>
-              {/* Package Selection */}
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Package (Optional)</InputLabel>
-                <Select
-                  name="package_id"
-                  value={formData.package_id}
-                  label="Package (Optional)"
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      package_id: parseInt(String(e.target.value)) || 0,
-                    }))
-                  }
-                >
-                  <MenuItem value={0}>None</MenuItem>
-                  {packages.map((pkg) => (
-                    <MenuItem key={pkg.id} value={pkg.id}>
-                      {pkg.name} ({pkg.credits_per_period} credits)
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+          {/* Package Selection */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Package (Optional)</InputLabel>
+            <Select
+              name="package_id"
+              value={formData.package_id}
+              label="Package (Optional)"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  package_id: parseInt(String(e.target.value)) || 0,
+                }))
+              }
+            >
+              <MenuItem value={0}>None</MenuItem>
+              {packages.map((pkg) => (
+                <MenuItem key={pkg.id} value={pkg.id}>
+                  {pkg.name} ({pkg.credits_per_period} credits)
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-              {/* Initial Credits */}
-              <TextField
-                fullWidth
-                label="Initial Credits"
-                name="initial_credits"
-                type="number"
-                value={formData.initial_credits}
-                onChange={handleChange}
-                error={!!errors.initial_credits}
-                helperText={errors.initial_credits}
-                sx={{ mb: 3 }}
-              />
-            </>
-          )}
+          {/* Initial Credits */}
+          <TextField
+            fullWidth
+            label="Initial Credits"
+            name="initial_credits"
+            type="number"
+            value={formData.initial_credits}
+            onChange={handleChange}
+            error={!!errors.initial_credits}
+            helperText={errors.initial_credits}
+            sx={{ mb: 3 }}
+          />
 
           {/* Submit Button */}
           <Button
@@ -291,7 +263,7 @@ export default function CreateUserSection() {
               },
             }}
           >
-            {isLoading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : formData.role === 'vendor' ? 'Create Vendor' : 'Create Customer'}
+            {isLoading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Create Customer'}
           </Button>
         </Box>
       </Card>
@@ -308,7 +280,7 @@ export default function CreateUserSection() {
           severity="success"
           sx={{ borderRadius: '12px' }}
         >
-          {successMessage}
+          Customer created successfully!
         </Alert>
       </Snackbar>
     </Box>
