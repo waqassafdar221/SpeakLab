@@ -35,6 +35,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined';
 import { vendorApi, AdminUser, AdminStats, VendorRevenue } from '@/lib/api';
+import CreditsAmountField from '@/app/components/CreditsAmountField';
 
 const cardSx = {
   p: 3,
@@ -429,12 +430,10 @@ export default function CustomersManagementSection() {
           </Box>
         </DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            type="number"
+          <CreditsAmountField
             label="Credits"
             value={newCredits}
-            onChange={(e) => setNewCredits(parseInt(e.target.value) || 0)}
+            onChange={setNewCredits}
             sx={{ mt: 2, mb: 2 }}
           />
           <TextField

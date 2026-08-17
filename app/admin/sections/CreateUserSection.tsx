@@ -28,6 +28,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import InventoryIcon from '@mui/icons-material/Inventory2Outlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { adminApi, Package } from '@/lib/api';
+import CreditsAmountField from '@/app/components/CreditsAmountField';
 
 const fieldSx = {
   mb: 2.5,
@@ -360,13 +361,14 @@ export default function CreateUserSection() {
                     </FormControl>
 
                     {/* Initial Credits */}
-                    <TextField
-                      fullWidth
+                    <CreditsAmountField
                       label="Initial Credits"
-                      name="initial_credits"
-                      type="number"
                       value={formData.initial_credits}
-                      onChange={handleChange}
+                      onChange={(value) => {
+                        setFormData((prev) => ({ ...prev, initial_credits: value }));
+                        setErrors((prev) => ({ ...prev, initial_credits: '' }));
+                        setJustCreated(false);
+                      }}
                       error={!!errors.initial_credits}
                       helperText={errors.initial_credits}
                       sx={{ ...fieldSx, mb: 1 }}

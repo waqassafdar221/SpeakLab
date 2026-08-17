@@ -29,6 +29,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { adminApi, AdminUser } from '@/lib/api';
+import CreditsAmountField from '@/app/components/CreditsAmountField';
 
 export default function UsersManagementSection() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -290,12 +291,10 @@ export default function UsersManagementSection() {
           <Typography variant="body2" sx={{ mb: 2 }}>
             Update credits and price for: <strong>{selectedUser?.username}</strong>
           </Typography>
-          <TextField
-            fullWidth
-            type="number"
+          <CreditsAmountField
             label="Credits"
             value={newCredits}
-            onChange={(e) => setNewCredits(parseInt(e.target.value) || 0)}
+            onChange={setNewCredits}
             sx={{ mt: 2, mb: 2 }}
           />
           <TextField

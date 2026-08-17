@@ -16,6 +16,7 @@ import {
   Snackbar,
 } from '@mui/material';
 import { vendorApi, Package } from '@/lib/api';
+import CreditsAmountField from '@/app/components/CreditsAmountField';
 
 export default function CreateCustomerSection() {
   const [formData, setFormData] = useState({
@@ -222,13 +223,13 @@ export default function CreateCustomerSection() {
           </FormControl>
 
           {/* Initial Credits */}
-          <TextField
-            fullWidth
+          <CreditsAmountField
             label="Initial Credits"
-            name="initial_credits"
-            type="number"
             value={formData.initial_credits}
-            onChange={handleChange}
+            onChange={(value) => {
+              setFormData((prev) => ({ ...prev, initial_credits: value }));
+              setErrors((prev) => ({ ...prev, initial_credits: '' }));
+            }}
             error={!!errors.initial_credits}
             helperText={errors.initial_credits}
             sx={{ mb: 2 }}
