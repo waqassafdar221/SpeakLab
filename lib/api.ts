@@ -227,6 +227,7 @@ export interface AdminUser {
   vendor_id?: number | null;
   vendor_username?: string | null;
   package_id: number | null;
+  monthly_price: number;
   invite_pending: boolean;
   created_at: string | null;
   expiry_date: string | null;
@@ -263,6 +264,7 @@ export interface CreateUserRequest {
   role?: 'vendor' | 'customer';
   package_id?: number;
   initial_credits: number;
+  monthly_price: number;
 }
 
 export interface CreateCustomerRequest {
@@ -270,6 +272,7 @@ export interface CreateCustomerRequest {
   email: string;
   package_id?: number;
   initial_credits: number;
+  monthly_price: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -302,6 +305,31 @@ export interface AuditLogEntry {
   created_at: string | null;
 }
 
+export interface VendorRevenueRow {
+  id: number;
+  username: string;
+  monthly_price: number;
+  customer_count: number;
+  customer_mrr: number;
+}
+
+export interface AdminRevenue {
+  vendor_mrr: number;
+  customer_mrr: number;
+  vendors: VendorRevenueRow[];
+}
+
+export interface CustomerRevenueRow {
+  id: number;
+  username: string;
+  monthly_price: number;
+}
+
+export interface VendorRevenue {
+  customer_mrr: number;
+  customers: CustomerRevenueRow[];
+}
+
 // Admin API functions
 export const adminApi = {
   getStats: async (): Promise<AdminStats> => {
@@ -323,6 +351,16 @@ export const adminApi = {
     return apiFetch<AdminUser>(`/admin/users/${userId}/credits?credits=${credits}`, {
       method: 'PATCH',
     });
+  },
+
+  updateUserPrice: async (userId: number, monthlyPrice: number): Promise<AdminUser> => {
+    return apiFetch<AdminUser>(`/admin/users/${userId}/price?monthly_price=${monthlyPrice}`, {
+      method: 'PATCH',
+    });
+  },
+
+  getRevenue: async (): Promise<AdminRevenue> => {
+    return apiFetch<AdminRevenue>('/admin/revenue');
   },
 
   deleteUser: async (userId: number): Promise<{ message: string }> => {
@@ -377,6 +415,16 @@ export const vendorApi = {
     return apiFetch<AdminUser>(`/vendor/customers/${customerId}/credits?credits=${credits}`, {
       method: 'PATCH',
     });
+  },
+
+  updateCustomerPrice: async (customerId: number, monthlyPrice: number): Promise<AdminUser> => {
+    return apiFetch<AdminUser>(`/vendor/customers/${customerId}/price?monthly_price=${monthlyPrice}`, {
+      method: 'PATCH',
+    });
+  },
+
+  getRevenue: async (): Promise<VendorRevenue> => {
+    return apiFetch<VendorRevenue>('/vendor/revenue');
   },
 
   deleteCustomer: async (customerId: number): Promise<{ message: string }> => {

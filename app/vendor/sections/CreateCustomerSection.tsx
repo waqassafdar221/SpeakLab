@@ -23,6 +23,7 @@ export default function CreateCustomerSection() {
     email: '',
     package_id: 0,
     initial_credits: 0,
+    monthly_price: 0,
   });
   const [packages, setPackages] = useState<Package[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -52,7 +53,11 @@ export default function CreateCustomerSection() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'initial_credits' || name === 'package_id' ? parseInt(value) || 0 : value,
+      [name]: name === 'initial_credits' || name === 'package_id'
+        ? parseInt(value) || 0
+        : name === 'monthly_price'
+        ? parseFloat(value) || 0
+        : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
@@ -74,6 +79,10 @@ export default function CreateCustomerSection() {
       newErrors.initial_credits = 'Credits cannot be negative';
     }
 
+    if (formData.monthly_price < 0) {
+      newErrors.monthly_price = 'Price cannot be negative';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -93,6 +102,7 @@ export default function CreateCustomerSection() {
         email: formData.email,
         package_id: formData.package_id || undefined,
         initial_credits: formData.initial_credits,
+        monthly_price: formData.monthly_price,
       });
 
       setSuccessMessage(
@@ -107,6 +117,7 @@ export default function CreateCustomerSection() {
         email: '',
         package_id: 0,
         initial_credits: 0,
+        monthly_price: 0,
       });
     } catch (err) {
       console.error('Failed to create customer:', err);
@@ -220,6 +231,20 @@ export default function CreateCustomerSection() {
             onChange={handleChange}
             error={!!errors.initial_credits}
             helperText={errors.initial_credits}
+            sx={{ mb: 2 }}
+          />
+
+          {/* Monthly Price */}
+          <TextField
+            fullWidth
+            label="Monthly Price"
+            name="monthly_price"
+            type="number"
+            inputProps={{ step: '0.01', min: 0 }}
+            value={formData.monthly_price}
+            onChange={handleChange}
+            error={!!errors.monthly_price}
+            helperText={errors.monthly_price || "What you're charging this customer — 0 if not billed"}
             sx={{ mb: 3 }}
           />
 

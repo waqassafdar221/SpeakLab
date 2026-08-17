@@ -24,6 +24,7 @@ export default function CreateUserSection() {
     role: 'customer' as 'customer' | 'vendor',
     package_id: 0,
     initial_credits: 0,
+    monthly_price: 0,
   });
   const [packages, setPackages] = useState<Package[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -53,7 +54,11 @@ export default function CreateUserSection() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'initial_credits' || name === 'package_id' ? parseInt(value) || 0 : value,
+      [name]: name === 'initial_credits' || name === 'package_id'
+        ? parseInt(value) || 0
+        : name === 'monthly_price'
+        ? parseFloat(value) || 0
+        : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
@@ -73,6 +78,10 @@ export default function CreateUserSection() {
 
     if (formData.initial_credits < 0) {
       newErrors.initial_credits = 'Credits cannot be negative';
+    }
+
+    if (formData.monthly_price < 0) {
+      newErrors.monthly_price = 'Price cannot be negative';
     }
 
     setErrors(newErrors);
@@ -95,6 +104,7 @@ export default function CreateUserSection() {
         role: formData.role,
         package_id: formData.role === 'vendor' ? undefined : formData.package_id || undefined,
         initial_credits: formData.role === 'vendor' ? 0 : formData.initial_credits,
+        monthly_price: formData.monthly_price,
       });
 
       const who = formData.role === 'vendor' ? 'Vendor' : 'Customer';
@@ -111,6 +121,7 @@ export default function CreateUserSection() {
         role: 'customer',
         package_id: 0,
         initial_credits: 0,
+        monthly_price: 0,
       });
     } catch (err) {
       console.error('Failed to create user:', err);
@@ -207,6 +218,20 @@ export default function CreateUserSection() {
             onChange={handleChange}
             error={!!errors.email}
             helperText={errors.email}
+            sx={{ mb: 2 }}
+          />
+
+          {/* Monthly Price */}
+          <TextField
+            fullWidth
+            label={`Monthly Price${formData.role === 'vendor' ? ' (billed to this vendor)' : ''}`}
+            name="monthly_price"
+            type="number"
+            inputProps={{ step: '0.01', min: 0 }}
+            value={formData.monthly_price}
+            onChange={handleChange}
+            error={!!errors.monthly_price}
+            helperText={errors.monthly_price || 'Recurring monthly amount for this account — 0 if not billed'}
             sx={{ mb: 2 }}
           />
 

@@ -43,6 +43,7 @@ export default function UsersManagementSection() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [newCredits, setNewCredits] = useState(0);
+  const [newPrice, setNewPrice] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -77,6 +78,7 @@ export default function UsersManagementSection() {
   const handleEditClick = (user: AdminUser) => {
     setSelectedUser(user);
     setNewCredits(user.credits);
+    setNewPrice(user.monthly_price);
     setEditDialogOpen(true);
   };
 
@@ -89,14 +91,17 @@ export default function UsersManagementSection() {
     if (!selectedUser) return;
 
     try {
-      await adminApi.updateUserCredits(selectedUser.id, newCredits);
-      setSuccessMessage('Credits updated successfully');
+      await Promise.all([
+        adminApi.updateUserCredits(selectedUser.id, newCredits),
+        adminApi.updateUserPrice(selectedUser.id, newPrice),
+      ]);
+      setSuccessMessage('Account updated successfully');
       setShowSuccess(true);
       setEditDialogOpen(false);
       fetchUsers();
     } catch (err) {
-      console.error('Failed to update credits:', err);
-      setError('Failed to update credits');
+      console.error('Failed to update account:', err);
+      setError('Failed to update account');
     }
   };
 
@@ -184,6 +189,7 @@ export default function UsersManagementSection() {
                 <TableCell sx={{ fontWeight: 700 }}>Username</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Credits</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Price/mo</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Vendor</TableCell>
@@ -193,7 +199,7 @@ export default function UsersManagementSection() {
             <TableBody>
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
+                  <TableCell colSpan={9} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
                     {search ? 'No users match your search.' : 'No users yet.'}
                   </TableCell>
                 </TableRow>
@@ -220,6 +226,9 @@ export default function UsersManagementSection() {
                         fontWeight: 600,
                       }}
                     />
+                  </TableCell>
+                  <TableCell sx={{ color: user.monthly_price > 0 ? '#1a1a1a' : '#9a9a9a', fontWeight: user.monthly_price > 0 ? 600 : 400 }}>
+                    {user.monthly_price > 0 ? `$${user.monthly_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
                   </TableCell>
                   <TableCell>
                     <Chip
@@ -274,20 +283,28 @@ export default function UsersManagementSection() {
         />
       </Card>
 
-      {/* Edit Credits Dialog */}
+      {/* Edit Account Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
-        <DialogTitle>Update Credits</DialogTitle>
+        <DialogTitle>Edit Account</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Update credits for user: <strong>{selectedUser?.username}</strong>
+            Update credits and price for: <strong>{selectedUser?.username}</strong>
           </Typography>
           <TextField
             fullWidth
             type="number"
-            label="New Credits"
+            label="Credits"
             value={newCredits}
             onChange={(e) => setNewCredits(parseInt(e.target.value) || 0)}
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            type="number"
+            label="Monthly Price"
+            inputProps={{ step: '0.01', min: 0 }}
+            value={newPrice}
+            onChange={(e) => setNewPrice(parseFloat(e.target.value) || 0)}
           />
         </DialogContent>
         <DialogActions>

@@ -17,6 +17,7 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PaidIcon from '@mui/icons-material/Paid';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +28,7 @@ import { TokenManager, userApi, authApi } from '@/lib/api';
 import VendorDashboardSection from './sections/VendorDashboardSection';
 import CustomersManagementSection from './sections/CustomersManagementSection';
 import CreateCustomerSection from './sections/CreateCustomerSection';
+import RevenueSection from './sections/RevenueSection';
 
 const drawerWidth = 240;
 
@@ -34,6 +36,7 @@ const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
   { id: 'customers', label: 'Manage Customers', icon: <PeopleIcon /> },
   { id: 'create-customer', label: 'Create Customer', icon: <PersonAddIcon /> },
+  { id: 'revenue', label: 'Revenue', icon: <PaidIcon /> },
 ];
 
 export default function VendorPage() {
@@ -95,6 +98,8 @@ export default function VendorPage() {
         return <CustomersManagementSection />;
       case 'create-customer':
         return <CreateCustomerSection />;
+      case 'revenue':
+        return <RevenueSection />;
       default:
         return <VendorDashboardSection />;
     }
