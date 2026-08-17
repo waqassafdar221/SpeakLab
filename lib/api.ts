@@ -109,6 +109,24 @@ export const authApi = {
     });
   },
 
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+    return apiFetch<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  getResetInfo: async (token: string): Promise<InviteInfo> => {
+    return apiFetch<InviteInfo>(`/auth/reset/${encodeURIComponent(token)}`);
+  },
+
+  resetPassword: async (token: string, password: string): Promise<LoginResponse> => {
+    return apiFetch<LoginResponse>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    });
+  },
+
   logout: () => {
     TokenManager.remove();
   },
@@ -254,14 +272,44 @@ export interface CreateCustomerRequest {
   initial_credits: number;
 }
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface ListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
+
+function buildListQuery({ page = 1, pageSize = 20, search = '' }: ListParams): string {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  if (search) params.set('search', search);
+  return params.toString();
+}
+
+export interface AuditLogEntry {
+  id: number;
+  actor_username: string;
+  action: string;
+  target_type: string | null;
+  target_id: number | null;
+  target_username: string | null;
+  details: string | null;
+  created_at: string | null;
+}
+
 // Admin API functions
 export const adminApi = {
   getStats: async (): Promise<AdminStats> => {
     return apiFetch<AdminStats>('/admin/stats');
   },
 
-  listUsers: async (): Promise<AdminUser[]> => {
-    return apiFetch<AdminUser[]>('/admin/users');
+  listUsers: async (params: ListParams = {}): Promise<PaginatedResponse<AdminUser>> => {
+    return apiFetch<PaginatedResponse<AdminUser>>(`/admin/users?${buildListQuery(params)}`);
   },
 
   createUser: async (request: CreateUserRequest): Promise<{ id: number; username: string; email_sent: boolean }> => {
@@ -298,6 +346,10 @@ export const adminApi = {
   listVendors: async (): Promise<VendorListItem[]> => {
     return apiFetch<VendorListItem[]>('/admin/vendors');
   },
+
+  getAuditLog: async (params: ListParams = {}): Promise<PaginatedResponse<AuditLogEntry>> => {
+    return apiFetch<PaginatedResponse<AuditLogEntry>>(`/admin/audit-log?${buildListQuery(params)}`);
+  },
 };
 
 // Vendor API functions — same shape as adminApi, scoped to the vendor's own customers
@@ -310,8 +362,8 @@ export const vendorApi = {
     return apiFetch<Package[]>('/vendor/packages');
   },
 
-  listCustomers: async (): Promise<AdminUser[]> => {
-    return apiFetch<AdminUser[]>('/vendor/customers');
+  listCustomers: async (params: ListParams = {}): Promise<PaginatedResponse<AdminUser>> => {
+    return apiFetch<PaginatedResponse<AdminUser>>(`/vendor/customers?${buildListQuery(params)}`);
   },
 
   createCustomer: async (request: CreateCustomerRequest): Promise<{ id: number; username: string; email_sent: boolean }> => {

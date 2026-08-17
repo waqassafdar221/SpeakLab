@@ -321,7 +321,7 @@ export default function LoginPage() {
             <Box sx={{ textAlign: 'right', mb: 3 }}>
               <Typography
                 component="a"
-                href="#"
+                href="/forgot-password"
                 variant="body2"
                 sx={{
                   color: '#4a4a4a',

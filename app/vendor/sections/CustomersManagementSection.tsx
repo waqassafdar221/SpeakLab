@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   IconButton,
   Chip,
   CircularProgress,
@@ -21,14 +22,21 @@ import {
   DialogActions,
   Button,
   TextField,
+  InputAdornment,
   Snackbar,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
 import { vendorApi, AdminUser } from '@/lib/api';
 
 export default function CustomersManagementSection() {
   const [customers, setCustomers] = useState<AdminUser[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -41,8 +49,9 @@ export default function CustomersManagementSection() {
   const fetchCustomers = async () => {
     setIsLoading(true);
     try {
-      const data = await vendorApi.listCustomers();
-      setCustomers(data);
+      const data = await vendorApi.listCustomers({ page: page + 1, pageSize: rowsPerPage, search });
+      setCustomers(data.items);
+      setTotal(data.total);
       setError('');
     } catch (err) {
       console.error('Failed to fetch customers:', err);
@@ -54,7 +63,15 @@ export default function CustomersManagementSection() {
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [page, rowsPerPage, search]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setPage(0);
+      setSearch(searchInput);
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
 
   const handleEditClick = (customer: AdminUser) => {
     setSelectedCustomer(customer);
@@ -97,14 +114,6 @@ export default function CustomersManagementSection() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
       {/* Header */}
@@ -131,6 +140,26 @@ export default function CustomersManagementSection() {
         </Alert>
       )}
 
+      {/* Search */}
+      <TextField
+        placeholder="Search by username or email"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        size="small"
+        sx={{
+          mb: 2.5,
+          width: { xs: '100%', sm: 320 },
+          '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" sx={{ color: '#9a9a9a' }} />
+            </InputAdornment>
+          ),
+        }}
+      />
+
       {/* Customers Table */}
       <Card
         sx={{
@@ -141,6 +170,11 @@ export default function CustomersManagementSection() {
           overflow: 'hidden',
         }}
       >
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
         <TableContainer>
           <Table>
             <TableHead>
@@ -158,7 +192,7 @@ export default function CustomersManagementSection() {
               {customers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
-                    No customers yet — create one from "Create Customer".
+                    {search ? 'No customers match your search.' : 'No customers yet — create one from "Create Customer".'}
                   </TableCell>
                 </TableRow>
               )}
@@ -215,6 +249,19 @@ export default function CustomersManagementSection() {
             </TableBody>
           </Table>
         </TableContainer>
+        )}
+        <TablePagination
+          component="div"
+          count={total}
+          page={page}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[10, 20, 50, 100]}
+        />
       </Card>
 
       {/* Edit Credits Dialog */}

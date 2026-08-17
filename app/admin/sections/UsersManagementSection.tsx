@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   IconButton,
   Chip,
   CircularProgress,
@@ -21,14 +22,21 @@ import {
   DialogActions,
   Button,
   TextField,
+  InputAdornment,
   Snackbar,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
 import { adminApi, AdminUser } from '@/lib/api';
 
 export default function UsersManagementSection() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0); // MUI TablePagination is 0-indexed; API is 1-indexed
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -41,8 +49,9 @@ export default function UsersManagementSection() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const data = await adminApi.listUsers();
-      setUsers(data);
+      const data = await adminApi.listUsers({ page: page + 1, pageSize: rowsPerPage, search });
+      setUsers(data.items);
+      setTotal(data.total);
       setError('');
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -54,7 +63,16 @@ export default function UsersManagementSection() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, rowsPerPage, search]);
+
+  // Debounce search input before it triggers a refetch
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setPage(0);
+      setSearch(searchInput);
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
 
   const handleEditClick = (user: AdminUser) => {
     setSelectedUser(user);
@@ -97,14 +115,6 @@ export default function UsersManagementSection() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
       {/* Header */}
@@ -131,6 +141,26 @@ export default function UsersManagementSection() {
         </Alert>
       )}
 
+      {/* Search */}
+      <TextField
+        placeholder="Search by username or email"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        size="small"
+        sx={{
+          mb: 2.5,
+          width: { xs: '100%', sm: 320 },
+          '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" sx={{ color: '#9a9a9a' }} />
+            </InputAdornment>
+          ),
+        }}
+      />
+
       {/* Users Table */}
       <Card
         sx={{
@@ -141,6 +171,11 @@ export default function UsersManagementSection() {
           overflow: 'hidden',
         }}
       >
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
         <TableContainer>
           <Table>
             <TableHead>
@@ -156,6 +191,13 @@ export default function UsersManagementSection() {
               </TableRow>
             </TableHead>
             <TableBody>
+              {users.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} sx={{ color: '#9a9a9a', textAlign: 'center', py: 4 }}>
+                    {search ? 'No users match your search.' : 'No users yet.'}
+                  </TableCell>
+                </TableRow>
+              )}
               {users.map((user) => (
                 <TableRow
                   key={user.id}
@@ -217,6 +259,19 @@ export default function UsersManagementSection() {
             </TableBody>
           </Table>
         </TableContainer>
+        )}
+        <TablePagination
+          component="div"
+          count={total}
+          page={page}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[10, 20, 50, 100]}
+        />
       </Card>
 
       {/* Edit Credits Dialog */}

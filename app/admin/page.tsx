@@ -19,6 +19,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import HistoryIcon from '@mui/icons-material/History';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,6 +31,7 @@ import AdminDashboardSection from './sections/AdminDashboardSection';
 import UsersManagementSection from './sections/UsersManagementSection';
 import CreateUserSection from './sections/CreateUserSection';
 import VendorsManagementSection from './sections/VendorsManagementSection';
+import AuditLogSection from './sections/AuditLogSection';
 
 const drawerWidth = 240;
 
@@ -38,6 +40,7 @@ const navItems = [
   { id: 'users', label: 'Manage Users', icon: <PeopleIcon /> },
   { id: 'create-user', label: 'Create User', icon: <PersonAddIcon /> },
   { id: 'vendors', label: 'Vendors', icon: <StorefrontIcon /> },
+  { id: 'audit-log', label: 'Audit Log', icon: <HistoryIcon /> },
 ];
 
 export default function AdminPage() {
@@ -101,6 +104,8 @@ export default function AdminPage() {
         return <CreateUserSection />;
       case 'vendors':
         return <VendorsManagementSection />;
+      case 'audit-log':
+        return <AuditLogSection />;
       default:
         return <AdminDashboardSection />;
     }
