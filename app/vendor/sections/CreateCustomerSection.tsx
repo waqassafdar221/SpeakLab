@@ -9,14 +9,35 @@ import {
   Button,
   Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Snackbar,
+  Grid,
+  Avatar,
+  Chip,
+  Divider,
 } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
+import PersonIcon from '@mui/icons-material/Person';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import InventoryIcon from '@mui/icons-material/Inventory2Outlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { vendorApi, Package } from '@/lib/api';
 import CreditsAmountField from '@/app/components/CreditsAmountField';
+
+const fieldSx = {
+  mb: 2.5,
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '10px',
+    backgroundColor: '#f6f5f1',
+    transition: 'background-color 0.2s ease',
+    '&:hover': { backgroundColor: '#ebe9e0' },
+    '&.Mui-focused': {
+      backgroundColor: '#fff',
+      '& fieldset': { borderColor: '#1a1a1a', borderWidth: '2px' },
+    },
+  },
+};
 
 export default function CreateCustomerSection() {
   const [formData, setFormData] = useState({
@@ -32,6 +53,7 @@ export default function CreateCustomerSection() {
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('Customer created successfully!');
+  const [justCreated, setJustCreated] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -61,6 +83,7 @@ export default function CreateCustomerSection() {
         : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
+    setJustCreated(false);
   };
 
   const validateForm = () => {
@@ -112,6 +135,7 @@ export default function CreateCustomerSection() {
           : 'Customer created, but the invite email failed to send.'
       );
       setShowSuccess(true);
+      setJustCreated(true);
       // Reset form
       setFormData({
         username: '',
@@ -136,6 +160,8 @@ export default function CreateCustomerSection() {
     );
   }
 
+  const selectedPackage = packages.find((p) => p.id === formData.package_id);
+
   return (
     <Box>
       {/* Header */}
@@ -156,127 +182,295 @@ export default function CreateCustomerSection() {
         </Typography>
       </Box>
 
-      {/* Create Customer Form */}
-      <Card
-        sx={{
-          p: 4,
-          maxWidth: 600,
-          borderRadius: '16px',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
-        }}
-      >
-        {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={handleSubmit}>
-          {/* Username */}
-          <TextField
-            fullWidth
-            label="Username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            error={!!errors.username}
-            helperText={errors.username}
-            sx={{ mb: 2 }}
-          />
-
-          {/* Email */}
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            error={!!errors.email}
-            helperText={errors.email}
-            sx={{ mb: 2 }}
-          />
-
-          {/* Package Selection */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Package (Optional)</InputLabel>
-            <Select
-              name="package_id"
-              value={formData.package_id}
-              label="Package (Optional)"
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  package_id: parseInt(String(e.target.value)) || 0,
-                }))
-              }
-            >
-              <MenuItem value={0}>None</MenuItem>
-              {packages.map((pkg) => (
-                <MenuItem key={pkg.id} value={pkg.id}>
-                  {pkg.name} ({pkg.credits_per_period} credits)
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Initial Credits */}
-          <CreditsAmountField
-            label="Initial Credits"
-            value={formData.initial_credits}
-            onChange={(value) => {
-              setFormData((prev) => ({ ...prev, initial_credits: value }));
-              setErrors((prev) => ({ ...prev, initial_credits: '' }));
-            }}
-            error={!!errors.initial_credits}
-            helperText={errors.initial_credits}
-            sx={{ mb: 2 }}
-          />
-
-          {/* Monthly Price */}
-          <TextField
-            fullWidth
-            label="Monthly Price (PKR)"
-            name="monthly_price"
-            type="number"
-            inputProps={{ step: '0.01', min: 0 }}
-            value={formData.monthly_price}
-            onChange={handleChange}
-            error={!!errors.monthly_price}
-            helperText={errors.monthly_price || "What you're charging this customer — 0 if not billed"}
-            sx={{ mb: 3 }}
-          />
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={isLoading}
+      <Grid container spacing={3}>
+        {/* Form */}
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Card
             sx={{
-              backgroundColor: '#1a1a1a',
-              color: '#fff',
-              py: 1.5,
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: '#2a2a2a',
-              },
-              '&:disabled': {
-                backgroundColor: '#d0d0d0',
-                color: '#6a6a6a',
-              },
+              p: { xs: 3, sm: 4 },
+              borderRadius: '16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
             }}
           >
-            {isLoading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Create Customer'}
-          </Button>
-        </Box>
-      </Card>
+            {error && (
+              <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
+                {error}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={handleSubmit}>
+              {/* Username */}
+              <TextField
+                fullWidth
+                label="Username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                error={!!errors.username}
+                helperText={errors.username}
+                sx={fieldSx}
+              />
+
+              {/* Email */}
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={!!errors.email}
+                helperText={errors.email}
+                sx={fieldSx}
+              />
+
+              {/* Package — interactive cards */}
+              <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#6a6a6a', mb: 1.25, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Package
+              </Typography>
+              {packages.length === 0 ? (
+                <Typography sx={{ fontSize: '0.85rem', color: '#9a9a9a', mb: 2.5 }}>
+                  No packages configured yet.
+                </Typography>
+              ) : (
+                <Grid container spacing={1.5} sx={{ mb: 3 }}>
+                  <Grid size={6}>
+                    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.15 }}>
+                      <Box
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, package_id: 0 }));
+                          setJustCreated(false);
+                        }}
+                        sx={{
+                          position: 'relative',
+                          cursor: 'pointer',
+                          borderRadius: '14px',
+                          p: 2,
+                          height: '100%',
+                          border: formData.package_id === 0 ? '2px solid #1a1a1a' : '1px solid rgba(0,0,0,0.1)',
+                          backgroundColor: formData.package_id === 0 ? '#1a1a1a' : '#f6f5f1',
+                          transition: 'all 0.2s ease',
+                          '&:hover': { borderColor: '#1a1a1a' },
+                        }}
+                      >
+                        {formData.package_id === 0 && (
+                          <CheckCircleIcon sx={{ position: 'absolute', top: 10, right: 10, fontSize: 18, color: '#fff' }} />
+                        )}
+                        <InventoryIcon sx={{ fontSize: 20, mb: 1, color: formData.package_id === 0 ? '#fff' : '#1a1a1a' }} />
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: formData.package_id === 0 ? '#fff' : '#1a1a1a' }}>
+                          None
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: formData.package_id === 0 ? 'rgba(255,255,255,0.7)' : '#8a8a8a' }}>
+                          No package assigned
+                        </Typography>
+                      </Box>
+                    </motion.div>
+                  </Grid>
+                  {packages.map((pkg) => {
+                    const selected = formData.package_id === pkg.id;
+                    return (
+                      <Grid size={6} key={pkg.id}>
+                        <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.15 }}>
+                          <Box
+                            onClick={() => {
+                              setFormData((prev) => ({ ...prev, package_id: pkg.id }));
+                              setJustCreated(false);
+                            }}
+                            sx={{
+                              position: 'relative',
+                              cursor: 'pointer',
+                              borderRadius: '14px',
+                              p: 2,
+                              height: '100%',
+                              border: selected ? '2px solid #1a1a1a' : '1px solid rgba(0,0,0,0.1)',
+                              backgroundColor: selected ? '#1a1a1a' : '#f6f5f1',
+                              transition: 'all 0.2s ease',
+                              '&:hover': { borderColor: '#1a1a1a' },
+                            }}
+                          >
+                            {selected && (
+                              <CheckCircleIcon sx={{ position: 'absolute', top: 10, right: 10, fontSize: 18, color: '#fff' }} />
+                            )}
+                            <InventoryIcon sx={{ fontSize: 20, mb: 1, color: selected ? '#fff' : '#1a1a1a' }} />
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: selected ? '#fff' : '#1a1a1a' }}>
+                              {pkg.name}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: selected ? 'rgba(255,255,255,0.7)' : '#8a8a8a' }}>
+                              {pkg.credits_per_period.toLocaleString()} credits
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              )}
+
+              {/* Initial Credits */}
+              <CreditsAmountField
+                label="Initial Credits"
+                value={formData.initial_credits}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, initial_credits: value }));
+                  setErrors((prev) => ({ ...prev, initial_credits: '' }));
+                  setJustCreated(false);
+                }}
+                error={!!errors.initial_credits}
+                helperText={errors.initial_credits}
+                sx={{ mb: 2.5 }}
+              />
+
+              {/* Monthly Price */}
+              <TextField
+                fullWidth
+                label="Monthly Price (PKR)"
+                name="monthly_price"
+                type="number"
+                inputProps={{ step: '0.01', min: 0 }}
+                value={formData.monthly_price}
+                onChange={handleChange}
+                error={!!errors.monthly_price}
+                helperText={errors.monthly_price || "What you're charging this customer — 0 if not billed"}
+                sx={fieldSx}
+              />
+
+              {/* Submit Button */}
+              <Box sx={{ mt: 1 }}>
+                <motion.div whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    disabled={isLoading}
+                    sx={{
+                      backgroundColor: justCreated ? '#2f7d68' : '#1a1a1a',
+                      color: '#fff',
+                      py: 1.5,
+                      borderRadius: '999px',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: '0 8px 24px rgba(26, 26, 26, 0.2)',
+                      transition: 'background-color 0.25s ease',
+                      '&:hover': {
+                        backgroundColor: justCreated ? '#2f7d68' : '#2a2a2a',
+                      },
+                      '&:disabled': {
+                        backgroundColor: '#d0d0d0',
+                        color: '#6a6a6a',
+                      },
+                    }}
+                  >
+                    {isLoading ? (
+                      <CircularProgress size={24} sx={{ color: '#fff' }} />
+                    ) : justCreated ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CheckCircleIcon sx={{ fontSize: 20 }} /> Created
+                      </Box>
+                    ) : (
+                      'Create Customer'
+                    )}
+                  </Button>
+                </motion.div>
+              </Box>
+            </Box>
+          </Card>
+        </Grid>
+
+        {/* Live preview */}
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Card
+            sx={{
+              p: 3,
+              borderRadius: '16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+              position: { md: 'sticky' },
+              top: { md: 24 },
+            }}
+          >
+            <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#6a6a6a', mb: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Preview
+            </Typography>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+              <motion.div layout>
+                <Avatar
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    backgroundColor: '#1a1a1a',
+                  }}
+                >
+                  {formData.username.trim() ? formData.username.trim().charAt(0).toUpperCase() : <PersonIcon />}
+                </Avatar>
+              </motion.div>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {formData.username.trim() || 'New customer'}
+                </Typography>
+                <Chip
+                  label="Customer"
+                  size="small"
+                  sx={{
+                    mt: 0.5,
+                    height: 20,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    backgroundColor: 'rgba(26,26,26,0.08)',
+                    color: '#1a1a1a',
+                  }}
+                />
+              </Box>
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <MailOutlineIcon sx={{ fontSize: 18, color: '#9a9a9a' }} />
+                <Typography sx={{ fontSize: '0.85rem', color: formData.email.trim() ? '#1a1a1a' : '#b0b0b0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {formData.email.trim() || 'email@example.com'}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <InventoryIcon sx={{ fontSize: 18, color: '#9a9a9a' }} />
+                <Typography sx={{ fontSize: '0.85rem', color: '#1a1a1a' }}>
+                  {selectedPackage ? selectedPackage.name : 'No package'}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <AccountBalanceWalletIcon sx={{ fontSize: 18, color: '#9a9a9a' }} />
+                <Typography sx={{ fontSize: '0.85rem', color: '#1a1a1a' }}>
+                  {formData.initial_credits.toLocaleString()} initial credits
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <PaidOutlinedIcon sx={{ fontSize: 18, color: '#9a9a9a' }} />
+                <Typography sx={{ fontSize: '0.85rem', color: '#1a1a1a' }}>
+                  {formData.monthly_price > 0
+                    ? `PKR ${formData.monthly_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / month`
+                    : 'Not billed'}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+            <Typography sx={{ fontSize: '0.75rem', color: '#9a9a9a', lineHeight: 1.5 }}>
+              They won't be able to sign in until they open the invite email and set a password.
+            </Typography>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Success Snackbar */}
       <Snackbar
