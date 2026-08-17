@@ -224,7 +224,7 @@ export default function CreateUserSection() {
           {/* Monthly Price */}
           <TextField
             fullWidth
-            label={`Monthly Price${formData.role === 'vendor' ? ' (billed to this vendor)' : ''}`}
+            label={`Monthly Price (PKR)${formData.role === 'vendor' ? ' — billed to this vendor' : ''}`}
             name="monthly_price"
             type="number"
             inputProps={{ step: '0.01', min: 0 }}

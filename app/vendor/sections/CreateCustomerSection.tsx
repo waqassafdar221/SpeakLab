@@ -237,7 +237,7 @@ export default function CreateCustomerSection() {
           {/* Monthly Price */}
           <TextField
             fullWidth
-            label="Monthly Price"
+            label="Monthly Price (PKR)"
             name="monthly_price"
             type="number"
             inputProps={{ step: '0.01', min: 0 }}

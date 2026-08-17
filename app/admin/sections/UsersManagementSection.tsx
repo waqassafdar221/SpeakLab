@@ -228,7 +228,7 @@ export default function UsersManagementSection() {
                     />
                   </TableCell>
                   <TableCell sx={{ color: user.monthly_price > 0 ? '#1a1a1a' : '#9a9a9a', fontWeight: user.monthly_price > 0 ? 600 : 400 }}>
-                    {user.monthly_price > 0 ? `$${user.monthly_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
+                    {user.monthly_price > 0 ? `PKR ${user.monthly_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
                   </TableCell>
                   <TableCell>
                     <Chip
@@ -301,7 +301,7 @@ export default function UsersManagementSection() {
           <TextField
             fullWidth
             type="number"
-            label="Monthly Price"
+            label="Monthly Price (PKR)"
             inputProps={{ step: '0.01', min: 0 }}
             value={newPrice}
             onChange={(e) => setNewPrice(parseFloat(e.target.value) || 0)}

@@ -45,7 +45,7 @@ const cardSx = {
 };
 
 function formatMoney(value: number): string {
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `PKR ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function StatCard({
@@ -440,7 +440,7 @@ export default function CustomersManagementSection() {
           <TextField
             fullWidth
             type="number"
-            label="Monthly Price"
+            label="Monthly Price (PKR)"
             inputProps={{ step: '0.01', min: 0 }}
             value={newPrice}
             onChange={(e) => setNewPrice(parseFloat(e.target.value) || 0)}
